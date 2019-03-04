@@ -1,0 +1,30 @@
+[user]
+	name = sai
+	email = sai@mars
+[alias]
+	st = status
+	di = diff
+	ll = log --decorate=full --graph
+	l1 = log --oneline -1
+	l  = log --oneline
+	ci = commit
+	co = checkout
+	br = branch
+	re = remote
+
+[core]
+	editor = emacsclient -nw
+[color]
+	diff = auto
+	status = auto
+	branch = auto
+	ui = true
+[push]
+	default = nothing
+[color "diff"]
+	old = "#ff4444"
+	new = "#44ff44"
+[color "status"]
+	added = "#44ff44"
+	changed = "#ff4444"
+	untracked = "#ff4444"
