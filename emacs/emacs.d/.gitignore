@@ -1,0 +1,5 @@
+# compiled emacs-lisp
+*.elc
+
+/undohist
+/recentf
