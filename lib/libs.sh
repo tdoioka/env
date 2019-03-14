@@ -30,6 +30,20 @@ function aresame() {
 # if $2 and $1 are same, do nothing.
 function linkifneed() {
     aresame $1 $2 || {
-	ln --backup=t -s $1 $2
+	backupdir $2
+	ln -v --backup=t -nfs $1 $2
     }
+}
+
+
+# backup dirctory $1 with BACKUPOPTION
+BACKUPDIR_OPT="t"
+function backupdir() {
+    if [[ -d "$1" ]]; then
+	local name="${1##*/}"
+	local dir="$(dirname $1)"
+	mkdir /tmp/$name
+	mv -v --backup="${BACKUPDIR_OPT}" "/tmp/$name" "$dir"
+	rmdir "$1"
+    fi
 }
