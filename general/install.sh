@@ -1,5 +1,10 @@
 #!/bin/bash
 
-sudo apt install -y openssh-server
-sudo apt install -y net-tools
-sudo apt install -y tree
+sudo ls > /dev/null
+
+source $(realpath `dirname $0`/../lib/libs.sh)
+
+aptinstallifneed openssh-server
+aptinstallifneed net-tools
+aptinstallifneed tree
+aptinstallifneed nkf
