@@ -8,4 +8,4 @@ aptinstallifneed emacs
 
 linkifneed ${S}/emacs.d ~/.emacs.d
 
-emacs --script ~/emacs.d/elpa-byte-compile.el
+emacs --script ~/.emacs.d/elpa-byte-compile.el
