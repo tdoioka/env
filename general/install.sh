@@ -2,7 +2,7 @@
 
 sudo ls > /dev/null
 
-source $(realpath `dirname $0`/../lib/libs.sh)
+source "$(realpath `dirname $0`/../lib/libs.sh)"
 
 aptinstallifneed openssh-server
 aptinstallifneed net-tools
