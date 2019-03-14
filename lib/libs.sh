@@ -1,13 +1,16 @@
 #!/bin/bash
 
-set -ueo pipefail
-
 # usage: source "$(realpath `dirname $0`/../lib/libs.sh)"
 
-# S: script current directory
-S="$(realpath `dirname $0`)"
-# B: build directory
-B="${S}/build"
+# if $0 is script set S and B
+if [[ -e $0 ]]; then
+    # set option
+    set -ueo pipefail
+    # S: script current directory
+    S="$(realpath `dirname $0`)"
+    # B: build directory
+    B="${S}/build"
+fi
 
 # compaire $1 and $2, same or not.
 function aresame() {
