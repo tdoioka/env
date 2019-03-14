@@ -46,3 +46,14 @@ function backupdir() {
 	rmdir "$1"
     fi
 }
+
+# when $1 is installed by apt returns true
+function isaptinstalled() {
+    dpkg -l | awk '{print $2}' | sed 1,5d | grep -w "^$1$" >& /dev/null
+}
+# install $1 if not installed
+function aptinstallifneed() {
+    isaptinstalled "$1" || {
+	sudo apt install -y "$1"
+    }
+}
