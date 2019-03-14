@@ -1,3 +1,5 @@
+(package-initialize)
+
 (setq load-path (append '(
 			  "~/.emacs.d/lisp"
 			  ) load-path))
