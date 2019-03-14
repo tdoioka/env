@@ -6,6 +6,8 @@ set -ueo pipefail
 
 # S: script current directory
 S="$(realpath `dirname $0`)"
+# B: build directory
+B="${S}/build"
 
 # compaire $1 and $2, same or not.
 function aresame() {
@@ -59,9 +61,27 @@ function aptinstallifneed() {
 }
 
 # git clone $1 to ${S}/git dir
-function git_clone() {
-    if [[ ! -d "${S}/git/.git" ]]; then
-	rm -rf "${S}/git/.git"
-	git clone "$1" ${S}/git
+function gitclone() {
+    if [[ ! -d "${B}/.git" ]]; then
+	rm -rf "${B}/.git"
+	git clone "$1" "${B}"
     fi
+}
+
+# wget tarball from $1 to ${S}/dl, and extract then
+# create an ${S}/build symbolic link to extracted dir.
+function gettarball() {
+    local tarname="${1##*/}"
+    local name="${tarname%.t*}"
+    local dl="${S}/dl"
+
+    mkdir -p "${dl}"
+
+    [[ -e "${dl}/${tarname}" ]] || {
+	wget "$1" -O "${dl}/${tarname}"
+    }
+    [[ -d "${dl}/${name}" ]] || {
+	tar xf "${dl}/${tarname}" -C "${dl}"
+    }
+    ln -nsf "${dl}/${name}" "${B}"
 }
