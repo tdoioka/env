@@ -57,3 +57,11 @@ function aptinstallifneed() {
 	sudo apt install -y "$1"
     }
 }
+
+# git clone $1 to ${S}/git dir
+function git_clone() {
+    if [[ ! -d "${S}/git/.git" ]]; then
+	rm -rf "${S}/git/.git"
+	git clone "$1" ${S}/git
+    fi
+}
