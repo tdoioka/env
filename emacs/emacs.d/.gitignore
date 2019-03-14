@@ -1,5 +1,5 @@
 # compiled emacs-lisp
+.emacs.desktop
 *.elc
-
 /undohist
 /recentf
