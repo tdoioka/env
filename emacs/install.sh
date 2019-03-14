@@ -1,8 +1,10 @@
 #!/bin/bash
 
-sudo apt install -y emacs
+# depends cmigemo
 
 source $(realpath `dirname $0`/../lib/libs.sh)
+
+aptinstallifneed emacs
 
 linkifneed ${S}/emacs.d ~/.emacs.d
 
