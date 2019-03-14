@@ -2,7 +2,7 @@
 
 set -ueo pipefail
 
-# usage: source $(realpath `dirname $0`/../lib/libs.sh)
+# usage: source "$(realpath `dirname $0`/../lib/libs.sh)"
 
 # S: script current directory
 S="$(realpath `dirname $0`)"
