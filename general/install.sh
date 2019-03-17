@@ -9,3 +9,5 @@ aptinstallifneed net-tools
 aptinstallifneed tree
 aptinstallifneed nkf
 aptinstallifneed build-essential
+# for coloring less, diff and grep
+aptinstallifneed source-highlight
