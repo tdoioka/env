@@ -11,9 +11,7 @@ zstyle ':chpwd:*' recent-dirs-max 500
 zstyle ':chpwd:*' recent-dirs-default yes
 zstyle ':completion:*' recent-dirs-insert both
 
-source ~/dotfiles/zshrc.d/zaw/zaw.zsh
-
-zstyle ':filter-select:highlight' selected fg=black,bg=white,standout
+# zstyle ':filter-select:highlight' selected fg=black,bg=white,standout
 zstyle ':filter-select' case-insensitive yes
 
 bindkey '^@' zaw-cdr
