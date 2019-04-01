@@ -1,8 +1,8 @@
 #!/bin/bash
 
-source "$(realpath `dirname $0`/../lib/libs.sh)"
+set_install_env
 
-bash "${S}/../cmigemo/install.sh"
+install_depend cmigemo
 
 aptinstallifneed emacs
 
