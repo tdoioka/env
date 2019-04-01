@@ -79,7 +79,7 @@ function initprmpt() {
     if [[ -n "${SSH_CONNECTION}" ]]; then
 	local ssh=" $(echo ${SSH_CONNECTION} | awk '{print $(NF-1)}') "
     fi
-    local ssh_a='%s%B%K{cyan}%F{white}'
+    local ssh_a='%s%b%K{yellow}%F{black}'
     ssh="${ssh_a}${ssh}"
 
     local lv_a='%S%B%K{white}%F{black}'

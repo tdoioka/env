@@ -24,7 +24,7 @@ bindkey -e
 # start up emacs daemon
 init_emacsdaemon
 # set alias to emacs client
-alias e='emacsclient -nw'
+alias e='emacsclient -t'
 # default editor
-EDITOR='emacsclient -nw'
+export EDITOR='emacsclient -t'
 # lunch up editor (if able)

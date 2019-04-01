@@ -48,6 +48,14 @@ alias -g C='| cat'
 function di() {
     # TODO: color ling
     # diff -pru -xCVS -x.git $* | source-highlight -s diff -f esc
-    diff -pru -xCVS -x.git "$@"
+    diff -pru -xCVS -x.git "$@" --color
 }
 
+# export LESS='-iMR --no-init --quit-if-one-screen'
+export LESS='-iMR --no-init'
+export LESSOPEN='| /usr/share/source-highlight/src-hilite-lesspipe.sh %s'
+
+less_with_unbuffer() {
+    unbuffer "$@" |& less -SR
+}
+alias ul=less_with_unbuffer

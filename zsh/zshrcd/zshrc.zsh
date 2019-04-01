@@ -4,7 +4,7 @@ function sc() {
 	    echo "$@"
 	fi
     }
-    [ -e "$1" ] && {
+    [[ -e "$1" ]] && {
 	ee "zsh: load: $1"
 	unfunction ee
 	source "$1"
@@ -22,3 +22,4 @@ sc ~/.zshrc.d/general.zsh
 sc ~/.zshrc.d/git.zsh
 sc ~/.zshrc.d/emacs.zsh
 sc ~/.zshrc.d/kermit.zsh
+sc ~/.shrc.d/pyenv.sh

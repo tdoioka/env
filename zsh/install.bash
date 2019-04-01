@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source "$(realpath `dirname $0`/../lib/libs.sh)"
+set_install_env
 
 aptinstallifneed zsh
 
@@ -11,4 +11,4 @@ if [[ "$(uname)" == "Linux" ]]; then
     sudo chsh $(whoami) -s $(which zsh)
 fi
 
-bash "${S}/zaw/subinstall.sh"
+install_depend zaw
