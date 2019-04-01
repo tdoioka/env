@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source "$(realpath `dirname $0`/../lib/libs.sh)"
+set_install_env
 
 aptinstallifneed git
 
