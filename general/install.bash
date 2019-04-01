@@ -1,13 +1,15 @@
 #!/bin/bash
 
-sudo ls > /dev/null
-
-source "$(realpath `dirname $0`/../lib/libs.sh)"
+set_install_env
 
 aptinstallifneed openssh-server
 aptinstallifneed net-tools
 aptinstallifneed tree
 aptinstallifneed nkf
 aptinstallifneed build-essential
-# for coloring less, diff and grep
+# for coloring less
 aptinstallifneed source-highlight
+# for coloring less. install unbuffer.
+aptinstallifneed expect
+
+linkifneed "${S}/shrc.d" ~/.shrc.d
