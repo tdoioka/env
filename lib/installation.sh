@@ -140,9 +140,13 @@ function linkifneed() {
 #
 function gitclone() {
     [[ $# -ne 0 ]] || return -1
-    if [[ ! -d "${B}/.git" ]]; then
-	rm -rf "${B}/.git"
-	git clone "$1" "${B}"
+    local SUBDIR=""
+    [[ $# -ge 2 && -n $2 ]] &&
+	SUBDIR="${2}/"
+
+    if [[ ! -d "${B}/${SUBDIR}.git" ]]; then
+	rm -rf "${B}/${SUBDIR}.git"
+	git clone "$1" "${B}/${SUBDIR}"
     fi
 }
 
