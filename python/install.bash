@@ -18,9 +18,7 @@ function pyenv_install() {
 	 pyenv install -v "${1}")
     fi
 }
-pyenv_install 3.7.2
+# pyenv_install 3.7.2
 pyenv_install 3.6.7
-pyenv versions
 pyenv global 3.6.7
-
-pip install --upgrade pip
+echo "PYENV: $(pyenv versions | grep -e '^\*')"
