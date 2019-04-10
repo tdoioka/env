@@ -10,6 +10,7 @@
 # function precmd () { vcs_info }
 function precmd() {
     gitinfo
+    venvinfo
 }
 function gitinfo() {
     GIT_BR_BRANCH=
@@ -64,6 +65,13 @@ function gitinfo() {
     fi
 }
 
+function venvinfo() {
+    VENV_NAME=
+    if [[ -n "${VIRTUAL_ENV}" ]]; then
+	VENV_NAME="{$(basename ${VIRTUAL_ENV})} "
+    fi
+}
+
 function initprmpt() {
     setopt prompt_subst
 
@@ -97,6 +105,9 @@ function initprmpt() {
     local vcs="${vcsbr}"'${GIT_BR_ST_START}'"${vcsa}${vcssep}${vcsb}${vcsg}"'${GIT_BR_ST_END}'
 
     ################################################################
+    local venv_a='%s%B%K{black}%F{yellow}'
+    local venv="${venv_a}"'${VENV_NAME}'
+
     local host_a='%s%B%K{black}%F{green}'
     local host="${host_a}%n@%M"
     local hdsp="%s%b%k%f:"
@@ -112,7 +123,7 @@ function initprmpt() {
 
     ################################################################
     local top="${time}${ret}${ssh}${lv}${vcs}"
-    local mid="${host}${hdsp}${dir}"
+    local mid="${venv}${host}${hdsp}${dir}"
     local tail="${count}${put}"
 
     PROMPT="${top}${Ln}${mid}${Ln}${tail}"
