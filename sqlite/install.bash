@@ -1,0 +1,2 @@
+aptinstallifneed sqlite3
+aptinstallifneed sqlitebrowser
