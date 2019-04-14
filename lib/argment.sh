@@ -15,10 +15,10 @@ declare -gxa ARGS=()
 function usage_exit() {
     # show description
     function show_description() {
-	if [[ -n "${HELP_DESCRIPTION[@]}" ]]; then
+	if [[ -n "${HELP_DESCRIPTION[@]:-}" ]]; then
 	    err ''
 	fi
-	for line in "${HELP_DESCRIPTION[@]}"; do
+	for line in "${HELP_DESCRIPTION[@]:-}"; do
 	    cat <<_EOS_ 1>&2
         ${line}
 _EOS_
@@ -26,13 +26,13 @@ _EOS_
     }
     # show option help string
     function show_option_help() {
-	if [[ -n "${OPTDICT[@]}" ]]; then
+	if [[ -n "${OPTDICT[@]:-}" ]]; then
 	    cat <<_EOS_ 1>&2
 
     OPTIONS:
 _EOS_
 	fi
-	for line in "${OPTDICT[@]}"; do
+	for line in "${OPTDICT[@]:-}"; do
 	    cat <<_EOS_ 1>&2
         ${line%% -- *} :
 	    ${line#* -- }
@@ -118,18 +118,18 @@ function setopt() {
     case $1 in
 	*:)
 	    id="${1%%:}"
-	    blacklist=("${OOPTLIST[@]}" "${SOPTLIST[@]}")
+	    blacklist=("${OOPTLIST[@]:-}" "${SOPTLIST[@]:-}")
 	    ;;
 	*-)
 	    id="${1%%-}"
-	    blacklist=("${VOPTLIST[@]}" "${SOPTLIST[@]}")
+	    blacklist=("${VOPTLIST[@]:-}" "${SOPTLIST[@]:-}")
 	    ;;
 	* )
 	    id="${1}"
-	    blacklist=("${VOPTLIST[@]}" "${OOPTLIST[@]}")
+	    blacklist=("${VOPTLIST[@]:-}" "${OOPTLIST[@]:-}")
 	    ;;
     esac
-    if [[ " ${BLACKLIST[@]} " =~ "${id}" ]]; then
+    if [[ " ${BLACKLIST[@]:-} " =~ "${id}" ]]; then
        err "option setting error. ${id} is already registered."
        return 1
     fi
@@ -201,7 +201,7 @@ function parseargs() {
 		[[ -n "$id" ]] || exit 1 # it is unregistered option
 
 		local optarg=""
-		if [[ " ${VOPTLIST[@]} " =~ " ${id} " ]]; then
+		if [[ " ${VOPTLIST[@]:-} " =~ " ${id} " ]]; then
 		    # the option requires parameter
 		    if [[ "$1" =~ = ]]; then
 			optarg="${1#*=}"
@@ -209,12 +209,12 @@ function parseargs() {
 			err "need an argument $1 option ($id)"
 			return 1
 		    fi
-		elif [[ " ${OOPTLIST[@]} " =~ " ${id} " ]]; then
+		elif [[ " ${OOPTLIST[@]:-} " =~ " ${id} " ]]; then
 		    # the option can have parameter
 		    if [[ "$1" =~ = ]]; then
 			optarg="${1#*=}"
 		    fi
-		elif [[ " ${SOPTLIST[@]} " =~ " ${id} " ]]; then
+		elif [[ " ${SOPTLIST[@]:-} " =~ " ${id} " ]]; then
 		    # the option do not have parameter
 		    if [[ "$1" =~ = ]]; then
 			err "no need argument $1 option ($id)"
@@ -229,7 +229,7 @@ function parseargs() {
 		[[ -n "$id" ]] || exit 1 # it is unregistered option
 
 		local optarg=""
-		if [[ " ${VOPTLIST[@]} " =~ " ${id} " ]];then
+		if [[ " ${VOPTLIST[@]:-} " =~ " ${id} " ]];then
 		    # the option requires parameter
 		    if [[ $# -lt 2 || "$2" =~ ^-.* ]]; then
 			# error when next arg is option or nothing.

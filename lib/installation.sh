@@ -40,7 +40,7 @@ function init_install_env() {
 #   Set ${B} which is INSTALL_ITEM build dir.
 #
 function set_install_env() {
-    # echo "${1:-2} -- ${BASH_SOURCE[@]}"
+    # echo "${1:-2} -- ${BASH_SOURCE[@]:-}"
     S="$(current_dir ${1:-2})"
     B="${S}/build"
 }
@@ -52,8 +52,8 @@ function set_install_env() {
 #
 function install_depend() {
     [[ $# -ne 0 ]] || return -1
-    [[ " ${INSTALL_ITEMS[@]} " =~ " $1 " ]] || return -1
-    if [[ ! " ${DEPENDS[@]} " =~ " $1 " ]]; then
+    [[ " ${INSTALL_ITEMS[@]:-} " =~ " $1 " ]] || return -1
+    if [[ ! " ${DEPENDS[@]:-} " =~ " $1 " ]]; then
 	DEPENDS+=("${1}")
 	S="${R}/${1}"
 	B="${S}/build"
