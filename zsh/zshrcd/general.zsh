@@ -59,3 +59,8 @@ less_with_unbuffer() {
     unbuffer "$@" |& less -SR
 }
 alias ul=less_with_unbuffer
+
+home_bin="$(echo ~)/bin"
+[[ $PATH =~ .*${home_bin}.* ]] || {
+    export PATH="${home_bin}:${PATH}"
+}
