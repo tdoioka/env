@@ -1,6 +1,8 @@
 # setup pipenv PATH
-export PATH="${PATH}:$(python -m site --user-base)/bin"
-
+pipenv_path="$(python -m site --user-base)/bin"
+[[ $PATH =~ .*${pipenv_path}.* ]] || {
+    export PATH="${PATH}:${pipenv_path}"
+}
 # setup pipenv
 eval "$(pipenv --completion)"
 
