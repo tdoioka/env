@@ -6,3 +6,5 @@ aptinstallifneed diffstat
 aptinstallifneed gawk
 aptinstallifneed libncurses5-dev
 aptinstallifneed texinfo
+
+linkifneed "${S}/yocto.zsh" ~/.shrc.d/yocto.zsh
