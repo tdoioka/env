@@ -14,9 +14,18 @@ require installation
 set_argument_string INSTALL_SCRIPT [INSTALL_SCRIPT...]
 init_install_env
 
-# show list packages
+# show list packages.
 $(getopt list) && {
-    echo "${INSTALL_ITEMS[@]}"
+    cat << __EOH__
+required(Install with the all option):
+
+    ${INSTALL_ITEMS[@]}
+
+optional(Not install with the all option):
+
+    ${OPTINSTALL_ITEMS[@]}
+
+__EOH__
     exit
 }
 

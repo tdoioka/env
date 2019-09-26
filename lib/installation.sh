@@ -6,10 +6,13 @@ sudo ls >& /dev/null
 
 # install script name
 declare -gx INS_FNAME='install.bash'
+declare -gx OPTINS_FNAME='install.opt.bash'
 # install root.
 declare -gx R=''
 # install script list
 declare -gxa INSTALL_ITEMS=()
+# install script list optional
+declare -gxa OPTINSTALL_ITEMS=()
 # backup option for backupdir, linkifneed.
 declare -gx BACKUPOPT='t'
 # List of depends items
@@ -29,6 +32,9 @@ function init_install_env() {
 	INSTALL_ITEMS=($(find "${R}" -type f -name "$INS_FNAME" |
 			      sed -e "s@${R}/@@g" \
 				  -e "s@/*${INS_FNAME}@@g"))
+	OPTINSTALL_ITEMS=($(find "${R}" -type f -name "$OPTINS_FNAME" |
+				sed -e "s@${R}/@@g" \
+				    -e "s@/*${OPTINS_FNAME}@@g"))
 	set_install_env 3
     fi
 }
@@ -57,7 +63,7 @@ function install_depend() {
 	DEPENDS+=("${1}")
 	S="${R}/${1}"
 	B="${S}/build"
-	source "${R}/${1}/${INS_FNAME}"
+	source "${R}/${1}/${INS_FNAME}" || source "${R}/${1}/${OPTINS_FNAME}"
 	set_install_env 3
     fi
 }
