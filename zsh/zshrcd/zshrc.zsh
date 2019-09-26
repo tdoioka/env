@@ -21,6 +21,6 @@ sc ~/.zshrc.d/history.zsh
 sc ~/.zshrc.d/general.zsh
 sc ~/.zshrc.d/git.zsh
 sc ~/.zshrc.d/emacs.zsh
-sc ~/.zshrc.d/kermit.zsh
-sc ~/.shrc.d/pyenv.sh
-sc ~/.shrc.d/pipenv.sh
+for sh in ~/.shrc.d/*.*sh; do
+    sc $sh
+done
