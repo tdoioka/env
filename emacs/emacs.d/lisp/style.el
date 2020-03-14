@@ -27,7 +27,7 @@
   (interactive)
   (c-set-style "linux")
   (setq indent-tabs-mode t)
-  (fset 'tabify-command 'tabify-buffer)
+  ;(fset 'tabify-command 'tabify-buffer)
   (set-tab8-indent)
   (subword-mode t))
 
@@ -35,7 +35,7 @@
   (interactive)
   (c-set-style "stroustrup")
   (setq indent-tabs-mode nil)
-  (fset 'tabify-command 'untabify-buffer)
+  ;(fset 'tabify-command 'untabify-buffer)
   (set-tab4-indent)
   (subword-mode t))
 
@@ -43,7 +43,7 @@
   (interactive)
   (c-set-style "tab-4")
   (setq indent-tabs-mode t)
-  (fset 'tabify-command 'tabify-buffer)
+  ;(fset 'tabify-command 'tabify-buffer)
   (set-tab4-indent)
   (subword-mode t))
 
@@ -51,7 +51,7 @@
   (interactive)
   (c-set-style "bsd")
   (setq indent-tabs-mode t)
-  (fset 'tabify-command 'tabify-buffer)
+  ;(fset 'tabify-command 'tabify-buffer)
   (set-tab8-indent)
   (subword-mode t))
 
@@ -80,7 +80,7 @@
   "Hooks which run on file write for programming modes"
   (prog1 nil
     (set-buffer-file-coding-system 'utf-8-unix)
-    (tabify-command)
+    ;(tabify-command)
     (maybe-delete-trailing-whitespace)))
 
 (defun delete-trailing-whitespacep ()
