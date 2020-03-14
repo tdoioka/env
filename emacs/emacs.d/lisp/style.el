@@ -112,7 +112,10 @@
 ;; shell script Coding style
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun sh-mode-hooks ()
-  (setq show-trailing-whitespace t))
+  (setq show-trailing-whitespace t)
+  (setq indent-tabs-mode nil)
+  (setq sh-basic-offset 2)
+  (setq sh-indentation 2))
 
 (add-hook 'sh-mode-hook 'sh-mode-hooks)
 
