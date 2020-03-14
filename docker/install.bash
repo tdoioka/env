@@ -5,6 +5,9 @@ set_install_env
 # see also: https://docs.docker.com/install/linux/docker-ce/ubuntu/
 
 type -p docker >& /dev/null || {
+    sudo groupadd docker
+    sudo gpasswd -a $USER docker
+
     aptinstallifneed apt-transport-https \
 		     ca-certificates \
 		     curl \
