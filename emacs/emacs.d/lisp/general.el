@@ -86,10 +86,11 @@
 ((lambda ()
    (package-initialize)
    (setq package-archives
-     '(("gnu" . "http://elpa.gnu.org/packages/")
-       ("melpa" . "http://melpa.org/packages/")
-       ;; ("melpa2" . "http://melpa.milkbox.net/packages/")
-       ("marmalade" . "http://marmalade-repo.org/packages/")
+     '(("gnu" . "https://elpa.gnu.org/packages/")
+       ("melpa-stable" . "https://stable.melpa.org/packages/")
+       ("melpa" . "https://melpa.org/packages/")
+       ("marmalade" . "https://marmalade-repo.org/packages/")
+       ;; ("melpa" . "https://melpa.milkbox.net/packages/")
        ("org" . "http://orgmode.org/elpa/")
        ))))
 
