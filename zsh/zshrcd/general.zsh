@@ -64,3 +64,6 @@ home_bin="$(echo ~)/bin"
 [[ $PATH =~ .*${home_bin}.* ]] || {
     export PATH="${home_bin}:${PATH}"
 }
+
+# disable Ctrl-d to exit
+set -o ignoreeof
