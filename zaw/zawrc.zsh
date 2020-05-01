@@ -14,7 +14,7 @@ zstyle ':completion:*' recent-dirs-insert both
 # zstyle ':filter-select:highlight' selected fg=black,bg=white,standout
 zstyle ':filter-select' case-insensitive yes
 
-bindkey '^@' zaw-cdr
+bindkey '^T' zaw-cdr
 bindkey '^R' zaw-history
 bindkey '^X^F' zaw-git-files
 bindkey '^X^B' zaw-git-branches
