@@ -28,3 +28,4 @@ type -p docker >& /dev/null || {
 		     docker-ce-cli \
 		     containerd.io
 }
+sudo usermod -a -G docker $(whoami)
