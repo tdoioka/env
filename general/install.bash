@@ -6,6 +6,7 @@ aptinstallifneed openssh-server
 aptinstallifneed net-tools
 aptinstallifneed tree
 aptinstallifneed nkf
+aptinstallifneed inotify-tools
 aptinstallifneed build-essential
 # for coloring less
 aptinstallifneed source-highlight
