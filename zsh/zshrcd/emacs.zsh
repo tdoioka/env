@@ -1,9 +1,9 @@
 # initalize
-function init_emacsdaemon () {
+function start_emacs () {
     local count=$(($(ps -ax | grep 'emacs --daemon' 2>/dev/null | wc -l)-1))
     if [[ $count -eq 0 ]] ;then
 	echo "START:emacs daemon"
-	emacs --daemon
+	emacs --daemon >& ~/.emacs.debug.log
     fi
 }
 # finalize
@@ -22,7 +22,7 @@ function kill_emacs() {
 # zsh: emacs like keybind
 bindkey -e
 # start up emacs daemon
-init_emacsdaemon
+start_emacs
 # set alias to emacs client
 alias e='emacsclient -t'
 # default editor
