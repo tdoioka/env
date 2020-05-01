@@ -13,11 +13,11 @@ function bbca() {
 }
 function bbr() {
     echo "@@@@ bitabke -c clean $1 && bitbake $@"
-    bitabke -c clean $1 && bitbake $@
+    bitbake -c clean $1 && bitbake $@
 }
 function bbcr() {
     echo "@@@@ bitabke -c cleanall $1 && bitbake $@"
-    bitabke -c cleanall $1 && bitbake $@
+    bitbake -c cleanall $1 && bitbake $@
 }
 function rmbuild() {
     if [ -n "${BUILDDIR}" ]; then
