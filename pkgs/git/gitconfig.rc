@@ -1,0 +1,3 @@
+[include]
+	path = .gitconfig.d/base.conf
+	path = .gitconfig.d/user.conf
