@@ -1,0 +1,130 @@
+################################################################
+# Configuration
+################################################################
+
+# set color mode
+set-option -g default-terminal screen-256color
+set -g terminal-overrides 'xterm:colors=256'
+
+# use emacs like
+set-window-option -g mode-keys emacs
+
+# set history
+set-option -g history-limit 10000
+
+#### start number pane and window
+# window
+set -g base-index 1
+# pane
+set -g pane-base-index 1
+
+# renumber window when after closing them
+set -g renumber-windows on
+
+# show pane number time (C-i)
+set-option -g display-panes-time 5000
+
+# key config
+set-window-option -g xterm-keys on
+
+# use utf-8 (The utf8 option has been removed in v2.2 and later.)
+# set-window-option -g utf8 on
+
+################################################################
+# key bindings
+################################################################
+
+#### change prefix C-b -> C-t
+set -g prefix C-t
+unbind C-b
+bind C-t send-prefix
+
+# define reload command
+bind r source-file ~/.tmux.conf \; display "Reloaded!"
+
+# no delay for escape key press
+set -sg escape-time 0
+
+# set repeate prefix time
+set -g repeat-time 1500
+
+# select
+bind -r UP select-pane -U
+bind -r DOWN select-pane -D
+bind -r LEFT select-pane -L
+bind -r RIGHT select-pane -R
+
+# resize pane
+bind -r S-UP resize-pane -U 1
+bind -r S-DOWN resize-pane -D 1
+bind -r S-LEFT resize-pane -L 1
+bind -r S-RIGHT resize-pane -R 1
+
+# toggle synchronize
+bind C-s setw 'synchronize-panes'
+
+# move pain
+bind -r { swap-pane -U
+bind -r } swap-pane -D
+
+# use current directory when spliting
+# splits short cut
+bind h split-window -v -c "#{pane_current_path}"
+bind v split-window -h -c "#{pane_current_path}"
+
+# Move current pane to given window in a vertical (m) or horizontal (M) split
+bind H choose-window -F "#{window_index}: #{window_name}" "join-pane -h -t %%"
+bind V choose-window -F "#{window_index}: #{window_name}" "join-pane -v -t %%"
+
+# show number of pane
+bind i display-panes
+
+# mousemode
+set -g mouse off
+bind-key m if-shell \
+	"tmux show-options -g mouse | grep off" "set-option -g mouse on" "set-option -g mouse off"
+
+################################################################
+# status bar
+################################################################
+
+# draw interval
+set-option -g status-interval 1
+
+# status bar length
+set-option -g status-left-length 30
+set-option -g status-right-length 80
+
+# status bar
+set -g status-right "#(bash ~/dotfiles/tmux.d/info.sh)"
+
+
+################################################################
+# color settings
+################################################################
+
+#### pane
+# inactive pane
+set -g pane-border-fg green
+set -g pane-border-bg black
+# active pane
+set -g pane-active-border-fg white
+set -g pane-active-border-fg yellow
+
+#### status bar
+set -g status-fg white
+set -g status-bg blue
+#### window list
+setw -g window-status-fg cyan
+setw -g window-status-bg default
+setw -g window-status-attr dim
+#### active window
+setw -g window-status-current-fg white
+setw -g window-status-current-bg cyan
+setw -g window-status-current-attr bright
+
+#### command line
+set -g message-fg white
+set -g message-bg black
+set -g message-attr bright
+
