@@ -1,0 +1,99 @@
+#!/bin/bash
+
+shlog_log() {
+  f="$1"; shift
+  echo $(date +"[%F %T.%N(%Z)]:${f}:") "$*"
+}
+
+shlog_help() {
+  cat << __eof__
+
+shlog [{option} [{file} [{file2}]]]
+
+DESCRIPTION:
+
+    This command uses the exec command to set up the logging environment.
+    The main function is to time stamp the output.
+    The timestamp format can be redefined by overriding the \`shlog_log'.
+    Another feature is that can suppress output of std and err or record to file(s).
+
+    When you no args specified reset the logging environment.
+
+    This script does not run when specify redirect/pipe to output.
+
+ARGUMENTS:
+
+    {option}:
+        -: Only add timestamp.
+        e: Suppresses the display of stdout and outputs only stderr.
+        q: Suppresses the display of all outputs.
+        E: Record only stderr to a file.
+        R: Record stdout and stderr to file(s).
+    {file}, {file2}:
+        file: save message, when file2 specified save stdout only.
+        file2: save message stderror.
+
+__eof__
+}
+
+shlog() {
+  # Show help.
+  if [[ " $* " =~ \ --help\  ]]; then
+    shlog_help
+    return 0
+  fi
+  # When redirect output, this func not works.
+  local fd1 fd2 fd1bk fd2bk tty
+  fd1= ; fd2= ; fd1bk= ; fd2bk= ;
+  tty="$(tty)"
+  test -e /proc/$$/fd/1 && fd1="$(readlink /proc/$$/fd/1)"
+  test -e /proc/$$/fd/2 && fd2="$(readlink /proc/$$/fd/2)"
+  test -e /proc/$$/fd/8 && fd1bk="$(readlink /proc/$$/fd/8)"
+  test -e /proc/$$/fd/9 && fd2bk="$(readlink /proc/$$/fd/9)"
+  # Check backup, exists.
+  if [[ "$fd1bk" == "$tty" ]] && [[ "$fd2bk" == "$tty" ]]; then
+    # restore fd and close backup
+    exec 1>&-; exec 1>&8
+    exec 2>&-; exec 2>&9
+  elif [[ "$fd1" == "$tty" ]] && [[ "$fd2" == "$tty" ]]; then
+    # backup fd
+    exec 8>&1
+    exec 9>&2
+  else
+    # specified redirect or pipe, nothing to do.
+    return 0
+  fi
+  # Check args
+  case $# in
+    0) opt=""; fstd=""; ferr="";;
+    1) opt="$1"; fstd=""; ferr="";;
+    2) opt="$1"; fstd="$2"; ferr="$2";;
+    *) opt="$1"; fstd="$2"; ferr="$3";;
+  esac
+  # When no option noting to do.
+  [[ "$opt" =~ [-eqER] ]] || return 0
+  # Check recording options
+  [[ "$opt" =~ E ]] && optf=E
+  [[ "$opt" =~ R ]] && optf=R
+  case $optf in
+    E) fstd="";;
+    R) ;;
+    *) fstd=""; ferr="" ;;
+  esac
+  [[ -n "$fstd" ]] || fstd=/dev/null
+  [[ -n "$ferr" ]] || ferr=/dev/null
+  # Check output options
+  [[ "$opt" =~ q ]] && opto=q
+  [[ "$opt" =~ e ]] && opto=e
+  # echo "$opt $fstd $ferr"
+  if [[ "$opt" =~ [qe] ]]; then
+      exec 1> >(while read line; do shlog_log STD $line; done >> "$fstd")
+  else
+      exec 1> >(while read line; do shlog_log STD $line; done | tee -a "$fstd")
+  fi
+  if [[ "$opt" =~ [q] ]]; then
+      exec 2> >(while read line; do shlog_log ERR $line; done >> "$ferr")
+  else
+      exec 2> >(while read line; do shlog_log ERR $line; done | tee -a "$ferr" 1>&2)
+  fi
+}
