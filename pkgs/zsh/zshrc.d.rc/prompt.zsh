@@ -22,22 +22,25 @@ autoload -Uz add-zsh-hook
 # To use to easy color in command line.
 autoload -Uz colors
 
-function _pure() {
+function __prmpt_pure() {
   GREP_OPTIONS='' LANG=C LC_ALL=C "$@"
 }
-function _grep() {
-  _pure grep "$@"
+function __prmpt_grep() {
+  __prmpt_pure grep "$@"
 }
-function _sed() {
-  _pure sed "$@"
+function __prmpt_sed() {
+  __prmpt_pure sed "$@"
 }
-function _getipv4() {
+function __prmpt_awk() {
+  __prmpt_pure awk "$@"
+}
+function __prmpt_getipv4() {
   hostname -I |
-    _grep -oE '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' |
+    __prmpt_grep -oE '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' |
     head -c -1
 }
 
-function _upfind() {
+function __prmpt_upfind() {
   target=$1
   parent=$(realpath ${2:-$PWD})
 
@@ -48,34 +51,34 @@ function _upfind() {
   if [[ "$parent" == / ]]; then
     return 1
   fi
-  _upfind "$target" "${parent}/.."
+  __prmpt_upfind "$target" "${parent}/.."
 }
-function _repo_manifest_name() {
+function __repo_manifest_name() {
   manifest="$1/manifest.xml"
   if [[ -L $manifest ]]; then
     readlink $manifest |
-      _sed -e 's@^manifests/@@g'
+      __prmpt_sed -e 's@^manifests/@@g'
   elif [[ -f $manifest ]]; then
-    _grep $manifest -e 'include' |
-      _sed -e 's@^[^"]*"\([^"]*\)".*@\1@g'
+    __prmpt_grep $manifest -e 'include' |
+      __prmpt_sed -e 's@^[^"]*"\([^"]*\)".*@\1@g'
   fi
 }
-function _preprompt() {
-  _ret=$?
+function __prmpt_main() {
+  __ret=$?
   setopt prompt_subst
   # For line 1 (miscribe)
   local ret date ip tty
-  retblnk=${(r:(3-${#_ret})::0:)}
+  retblnk=${(r:(3-${#__ret})::0:)}
 
-  ret="ret=${retblnk}$_ret | "
+  ret="ret=${retblnk}$__ret | "
   date=$(date +'%y/%m/%d-%H:%M:%S ')
-  ip=$(_getipv4 | tr '\n' ' ')' | '
+  ip=$(__prmpt_getipv4 | tr '\n' ' ')' | '
   shlvl="LV:$SHLVL "
-  tty=$(tty | _sed -e 's@/dev/@@g')
+  tty=$(tty | __prmpt_sed -e 's@/dev/@@g')
 
-  _line1="${date}${ret}${ip}${shlvl}${tty} "
+  __line1="${date}${ret}${ip}${shlvl}${tty} "
   LINE1=
-  if [[ "$_ret" -eq 0 ]]; then
+  if [[ "$__ret" -eq 0 ]]; then
     LINE1="${LINE1}%F{008}${date}"
     LINE1="${LINE1}%F{010}${ret}"
     LINE1="${LINE1}%F{154}${ip}"
@@ -89,7 +92,7 @@ function _preprompt() {
     LINE1="${LINE1}%F{226}${tty}"
   fi
   # LINE1="$LINE1""%K{016}${(r:($COLUMNS-${#_line1})::.:)}"
-  LINE1="$LINE1""${_newline}"
+  LINE1="$LINE1""${__newline}"
 
   # For line 3 (current directory coloring)
   nomanaged=
@@ -97,16 +100,18 @@ function _preprompt() {
   undergit=
   # For line 2 (repo info)
   REPOLINE=
-  repodir="$(_upfind .repo)"
+  repodir="$(__prmpt_upfind .repo)"
   if [[ -n "$repodir" ]]; then
     # Get manifest name.
-    repo_name="$(_repo_manifest_name "$repodir")"
+    repo_name="$(__repo_manifest_name "$repodir")"
     # Get branch name.
-    repo_branch="$(git -C "$repodir/manifests" rev-parse --abbrev-ref @{u} |
-                    _sed -e 's@origin/@@g')"
+    repo_branch="$(git -C "$repodir/manifests" \
+			rev-parse --abbrev-ref @{u} |
+			__prmpt_sed -e 's@origin/@@g')"
     # Repo manifest branch tained check.
     repo_tained=
-    if test -n "$(git -C "$repodir/manifests" diff --name-only HEAD -- $repo_name)"; then
+    if test -n "$(git -C "$repodir/manifests" \
+			diff --name-only HEAD -- $repo_name)"; then
       repo_tained='*'
     else
       repo_tained=''
@@ -126,23 +131,23 @@ function _preprompt() {
   if [[ -n "$gitstatus" ]]; then
     # Check branch status
     branch_st=$(echo $gitstatus | head -n 1 |
-		  _sed -e 's@## \(No commits yet on \)*@@g')
+		  __prmpt_sed -e 's@## \(No commits yet on \)*@@g')
     branches="${branch_st% \[*}"
     branch=""
-    if echo "$branches" | _grep -sq '\.\.\.' ; then
+    if echo "$branches" | __prmpt_grep -sq '\.\.\.' ; then
       # Exist tracking branch
       # Set current branch name and tracking branch name.
       branch="${branch}%F{002}${branches%...*}%f..."
       branch="${branch}%F{001}${branches##*...}%f"
       # Check ahead and/or behind.
       ahead="$(echo "${branch_st##*\[}" |
-      	       _grep -oe 'ahead \([0-9]*\)' |
-               awk '{ print $2}')"
+      	       __prmpt_grep -oe 'ahead \([0-9]*\)' |
+               __prmpt_awk '{ print $2}')"
       behind="$(echo "${branch_st##*\[}" |
-	        _grep -oe 'behind \([0-9]*\)' |
-                awk '{ print $2}')"
+	        __prmpt_grep -oe 'behind \([0-9]*\)' |
+                __prmpt_awk '{ print $2}')"
       gone="$(echo "${branch_st##*\[}" |
-              _grep -oe 'gone')"
+              __prmpt_grep -oe 'gone')"
       trac=
       [[ -n "$ahead" ]] && trac="${trac}%F{002}+$ahead%f"
       [[ -n "$ahead" && -n "$behind" ]] && trac="${trac},"
@@ -156,8 +161,10 @@ function _preprompt() {
     fi
     # Tained check.
     gittop=$(git rev-parse --show-toplevel)
-    untracked=$(git ls-files "${gittop}" --exclude-standard --others|wc -l)
-    modified=$(git ls-files "${gittop}" --modified|wc -l)
+    untracked=$(git ls-files "${gittop}" --exclude-standard --others|
+		    wc -l)
+    modified=$(git ls-files "${gittop}" --modified|
+		   wc -l)
     staged=$(git diff --name-only --cached|wc -l)
     git_work=
     [[ 0 != "$staged" ]] && git_work="${git_work}%F{010}S"
@@ -176,7 +183,7 @@ function _preprompt() {
   fi
   LINE2=
   if [[ -n "$VENV_NAME$REPOLINE$GITLINE" ]] ;then
-    LINE2="$VENV_NAME$REPOLINE$GITLINE${_newline}"
+    LINE2="$VENV_NAME$REPOLINE$GITLINE${__newline}"
   fi
 
   # For Line 3
@@ -187,17 +194,14 @@ function _preprompt() {
   CURRENTDIR="${CURRENTDIR}%F{039}${underrepo}"
   CURRENTDIR="${CURRENTDIR}%F{051}${undergit}"
 
-  USRHOST="$(echo -ne "%F{002}%n@%M${_clear}")"
-  LINE3="${USRHOST}:${CURRENTDIR}${_newline}"
+  USRHOST="$(echo -ne "%F{002}%n@%M${__clear}")"
+  LINE3="${USRHOST}:${CURRENTDIR}${__newline}"
 }
 
-function _venvinfo() {
-}
+__clear='%s%b%k%f'
+__newline='%s%b%k%f'$'\n'
 
-_clear='%s%b%k%f'
-_newline='%s%b%k%f'$'\n'
-
-function _pinit() {
+function __prmpt_init() {
   setopt prompt_subst
   PROMPT=
   PROMPT="$PROMPT"'${LINE1}'
@@ -205,6 +209,6 @@ function _pinit() {
   PROMPT="$PROMPT"'${LINE3}'
   PROMPT="$PROMPT"'%# '
 }
-_pinit
+__prmpt_init
 
-add-zsh-hook precmd _preprompt
+add-zsh-hook precmd __prmpt_main
