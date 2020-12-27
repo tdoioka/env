@@ -28,6 +28,7 @@ $(pkg-all):
 	$(log-pre)
 	$(MAKE) $(SHRC_LOADER)			\
 		$(SHRC)/funcs.rc.sh		\
+		$(SHRC)/alias.rc.sh		\
 		$(HOME)/.shrc			\
 		$(HOME)/.bash_profile
 	$(log-post)
