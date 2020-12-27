@@ -241,3 +241,22 @@ endef
 define .pkg-rel-path
 	$(shell realpath -s $(1) --relative-to $(2))
 endef
+
+# ==============================================================
+# Usage:
+#   $(call git-clone,<URL>)
+# Description:
+#   Clone with --depth 1 from <URL> to rule-target.
+# ==============================================================
+define git-clone
+	$(log-pre)
+	$(if $(wildcard $@),
+		git pull -C $@,
+		$(call .git-clone,$(1)))
+	$(log-post)
+endef
+define .git-clone
+	$(if $(wildcard $@-tmp),-rm -rf $@-tmp)
+	git clone --depth 1 $(1) $@-tmp
+	mv -v $@-tmp $@
+endef
