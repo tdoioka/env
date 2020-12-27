@@ -32,3 +32,15 @@ $(pkg-all):
 		$(HOME)/.shrc			\
 		$(HOME)/.bash_profile
 	$(log-post)
+
+define rcmake
+	$(if $(1),,$(error 'rcmake passed empry args.'))
+	$(if $$(wildcard $(SHRC_LOADER)),,$(error 'Not found SHRC_LOADER, add general to pkg-bdeps'))
+	$(if $(2),\
+		$(call .rcmake,$(1),$(2)),\
+		$(call .rcmake,$(SHRC_LOADER),$(1)))
+endef
+define .rcmake
+	+
+	bash -c "source $(1) && $(MAKE) $(2)"
+endef
