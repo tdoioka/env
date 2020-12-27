@@ -13,79 +13,68 @@ $(pkg-preup):
 	$(log-pre)
 	$(log-post)
 
+python_requirements :=				\
+	build-essential				\
+	curl					\
+	libbz2-dev				\
+	libffi-dev				\
+	liblzma-dev				\
+	libncurses5-dev				\
+	libncursesw5-dev			\
+	libreadline-dev				\
+	libsqlite3-dev				\
+	libssl-dev				\
+	llvm					\
+	python-openssl				\
+	tk-dev					\
+	wget					\
+	xz-utils				\
+	zlib1g-dev
+
 $(pkg-update):
 	$(log-pre)
-	$(call pkg-schedule,			\
-		build-essential			\
-		curl				\
-		libbz2-dev			\
-		libffi-dev			\
-		liblzma-dev			\
-		libncurses5-dev			\
-		libncursesw5-dev		\
-		libreadline-dev			\
-		libsqlite3-dev			\
-		libssl-dev			\
-		llvm				\
-		tk-dev				\
-		wget				\
-		xz-utils			\
-		zlib1g-dev			\
-		)
+	$(call pkg-schedule,$(python_requirements))
 	$(log-post)
 
 $(pkg-all):
 	$(log-pre)
-	$(MAKE)					\
-		$(.pyenv_ver_dirs)		\
-		$(.pipenv_bin)			\
-		$(.pipenv_shrc)
+	$(MAKE)	$(.pyenv-root) $(.pyenv-shrc) $(log-cmd)
+	$(call rcmake,$(.pyenv-shrc),\
+		$(.pyenv-ver-dirs) $(.pyenv-version) $(.pipenv-bin))
 	$(log-post)
 
 # pyenv
 # ================================================================
-.pyenv_shrc := $(SHRC)/pyenv.rc.sh
-
-# ================================================================
-.pyenv_git  := $(pkg)/pyenv.rc
-.pyenv_root := $(HOME)/.pyenv
-
-# Download pyenv source.
-define pyenv-clone
-	$(if $(wildcard $(@)-tmp),rm -rf $(@)-tmp)
-	git clone --depth 1 https://github.com/pyenv/pyenv.git $(@)-tmp
-	mv $(@)-tmp $@
-endef
-$(.pyenv_git):
-	$(log-pre)
-	$(if $(wildcard $@),			\
-		git pull -C $@,			\
-		$(call pyenv-clone))
-	$(log-post)
-
+# Environment variable
+.pyenv-shrc := $(SHRC)/pyenv.rc.sh
+.pyenv-git  := $(pkg)/pyenv.rc
+.pyenv-root := $(HOME)/.pyenv
 # All versions to install.
-.pyenv_ins_vers := $(sort $(PYENV_GLOBAL) $(PYENV_EXTRA_VERSIONS))
-.pyenv_ver_dirs := $(.pyenv_ins_vers:%=%)
+.pyenv-ins-vers := $(sort $(PYENV_GLOBAL) $(PYENV_EXTRA_VERSIONS))
+.pyenv-ver-dirs := $(.pyenv-ins-vers:%=$(.pyenv-root)/versions/%)
+.pyenv-version  := $(.pyenv-root)/version
 
-# Build python.
-$(.pyenv_ver_dirs):| $(.pyenv_root) $(.pyenv_shrc)
-	$(log-pre)
-	(bash -c "source $(SHRC_LOADER) && \
-		pyenv install -v $(@F) && \
-		pyenv global $(PYENV_GLOBAL)") \
-		$(log-cmd)
-	$(log-post)
+# Download pyenv src.
+$(.pyenv-git):
+	$(call git-clone,https://github.com/pyenv/pyenv.git)
+
+# Build and Install pyenv.
+$(.pyenv-ver-dirs):| $(.pyenv-root) $(pyenv-shrc)
+	pyenv install -v $(@F) $(log-cmd)
+
+# Set global.
+$(.pyenv-version):| $(.pyenv-ver-dirs) $(pyenv-shrc)
+	pyenv global system $(PYENV_GLOBAL) $(log-cmd)
 
 # pipenv
 # ================================================================
-.pipenv_shrc := $(SHRC)/pipenv.rc.sh
-.pipenv_bin  := $(HOME)/.local/bin/pipenv
+# Environment variable.
+.pipenv-shrc := $(SHRC)/pipenv.rc.sh
+.pipenv-bin  := $(HOME)/.local/bin/pipenv
 
-# Install pipenv.
-$(.pipenv_bin):| $(.pyenv_ver_dirs)
+# Install pipenv
+$(.pipenv-bin):| $(.pyenv-version) $(.pipenv-shrc)
 	$(log-pre)
-	(bash -c "source $(SHRC_LOADER) && \
-		pip install --upgrade pip && \
-		pip install --user --upgrade pipenv") \
-		$(log-cmd)
+	pip install --upgrade pip $(log-cmd)
+	pip install --user --upgrade pipenv $(log-cmd)
 	$(log-post)
