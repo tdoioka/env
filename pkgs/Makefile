@@ -3,12 +3,14 @@
 
 include base.mk
 
-
-mk=$(wildcard */pkg.mk)
-lnk=$(mk:%/pkg.mk=%.mk)
-$(lnk): %.mk: %/pkg.mk
+# Edit mode
+# ................................................................
+mkfiles=$(wildcard */pkg.mk)
+mklnks=$(mkfiles:%/pkg.mk=%.mk)
+$(mklnks): %.mk: %/pkg.mk
 	ln -s $< $@
+
 .PHONY: edit clean.edit
-edit: $(lnk)
+edit: $(mklnks)
 clean.edit:
-	-rm -f $(lnk)
+	-rm -f $(mklnks)

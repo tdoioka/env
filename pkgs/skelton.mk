@@ -13,7 +13,3 @@ $(pkg-update):
 $(pkg-all):
 	$(log-pre)
 	$(log-post)
-
-$(pkg):
-	$(log-pre)
-	$(log-post)

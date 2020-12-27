@@ -10,7 +10,7 @@ MAKEFLAGS += $(quiet) --no-print-directory
 MAKE_COMMAND := make MAKEFLAGS=$(child-mkflag) --no-print-directory
 
 # Set internal parameter.
-SHELL := /bin/bash -e -o pipefail -c
+SHELL := /bin/bash -e -o pipefail
 D ?=
 DEBUG ?= $(filter-out n 0,$(D))
 .DEFAULT_GOAL ?= all

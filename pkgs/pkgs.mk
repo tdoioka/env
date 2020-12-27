@@ -35,17 +35,17 @@ $$(eval $$(call pkg-link-task,$$(pkg)))
 endef
 
 define pkg-rule-task1
-$(preup)-$(1): $(first)
+$(preup)-$(1): $(wildcard $(1)/pkg.mk)| $(first)
 $(preup)-$(1): $$(addprefix $(preup)-,$$(pkg-bdeps) $$(pkg-rdeps))
 
-$(update)-$(1): $(preup) $(preup)-$(1)
+$(update)-$(1): $(wildcard $(1)/pkg.mk) $(preup)-$(1)| $(preup)
 $(update)-$(1): $$(addprefix $(update)-,$$(pkg-bdeps) $$(pkg-rdeps))
 
-$(all)-$(1): $(update) $(update)-$(1)
+$(all)-$(1): $(wildcard $(1)/pkg.mk) $(update)-$(1)| $(update)
 $(all)-$(1): $$(addprefix $(all)-,$$(pkg-bdeps))
 
 .PHONY: $(1)
-$(1): $(all)-$(1)
+$(1): $(all)-$(1) $(wildcard $(1)/pkg.mk)
 $(1): $$(addprefix $(all)-,$$(pkg-rdeps))
 $(1):
 	$$(log-pre)
@@ -53,10 +53,24 @@ $(1):
 
 all: $(all)-$(1)
 
-.PHONY: clean.$(1)
 $(1)-state := $(wildcard $(state)/*-$(1))
-clean.$(1): $$(addprefix clean.,$$(pkg-bdeps))
-	-rm $$($(1)-state)
+.PHONY: clean clean.$(1)
+clean: clean.$(1)
+clean.$(1):
+	$$(log-pre)
+	$$(if $$($(1)-state),-rm -v $$($(1)-state) $$(log-cmd))
+	$$(log-post)
+
+.PHONY: clean-r clean-r.$(1)
+clean-r: clean
+clean-r.$(1): clean.$(1) $$(addprefix clean-r.,$$(pkg-bdeps))
+
+.PHONY: upgrade upgrade.$(1)
+upgrade: upgrade.$(1)
+upgrade.$(1): clean.$(1)
+	$$(log-pre)
+	$$(MAKE) $(1)
+	$$(log-post)
 endef
 
 define pkg-link-task
