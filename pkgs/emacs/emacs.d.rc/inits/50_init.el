@@ -240,6 +240,28 @@
   (undohist-initialize))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; highlight
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; highlihgt-symbol
+(use-package highlight-symbol
+  :bind
+  ("M-s M-r" . 'highlight-symbol-query-replace)
+  :init
+  (setq highlight-symbol-idle-delay 0.1)
+  (add-hook 'prog-mode-hook 'highlight-symbol-mode)
+  (add-hook 'prog-mode-hook 'highlight-symbol-nav-mode)
+  )
+
+;; highlight-ymbol overlay
+(use-package symbol-overlay
+  :bind
+  ("M-i" . 'symbol-overlay-put)
+  ("<f7>" . 'symbol-overlay-mode)
+  ("M-I" . 'symbol-overlay-remove-all)
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; magit
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package magit
@@ -452,16 +474,6 @@
 ;;   (setq migemo-coding-system 'utf-8-unix)
 ;;   (load-library "migemo")
 ;;   (migemo-init))
-
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ;; highlight
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (use-package highlight-symbol
-;;   :bind
-;;   ("M-s M-r" . highlight-symbol-query-replace)
-;;   :init
-;;   (setq highlight-symbol-idle-delay 0.1)
-;;   (add-hook 'prog-mode-hook 'highlight-symbol-mode))
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ;; helm-mode
