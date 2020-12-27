@@ -4,8 +4,8 @@
 addpath "${HOME}/bin"
 
 loadshrc() {
-  SHELL="$(basename $(ps -p $$ -o cmd -h | awk '{print $1}'))"
-  SHRCS=($(find "${HOME}/.shrc/" -name "*.rc.${SHELL}" -or -name "*.rc.sh" |
+  local shname="$(basename $(ps -p $$ -o cmd -h | awk '{print $1}' | tr -d '-'))"
+  SHRCS=($(find "${HOME}/.shrc/" -name "*.rc.${shname}" -or -name "*.rc.sh" |
              grep -v "${HOME}/.shrc/funcs.rc.sh" |
              grep -v "${HOME}/.shrc/loader.rc.sh"))
   if [ -n "${SHRCS[*]}" ]; then
@@ -16,7 +16,8 @@ loadshrc() {
   fi
 }
 
-if [[ ! -n "${_RCLOADED-}" ]]; then
+if [[ ! -n "${_RCLOADED-}" ]] || \
+       [[ $(cat /proc/$$/comm) != $(cat /proc/$PPID/comm) ]] ; then
   loadshrc
   export _RCLOADED=1
 fi
