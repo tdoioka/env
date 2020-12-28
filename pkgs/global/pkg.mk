@@ -2,7 +2,7 @@ GLOBAL_VERSION ?= 6.6.4
 
 # ================================================================
 
-pkg-bdeps := python
+pkg-bdeps := python general
 pkg-rdeps :=
 $(eval $(call pkg-rule-task))
 
@@ -19,22 +19,31 @@ $(pkg-update):
 	)
 	$(log-post)
 
-.global_srcdir := $(pkg)/global-$(GLOBAL_VERSION)
 $(pkg-all):
 	$(log-pre)
-	$(MAKE) $(.global_srcdir)
-	(bash -c "source $(SHRC_LOADER) && \
-		pip install pygments && \
-		cd $(.global_srcdir) && ./configure") \
-		$(log-cmd)
-	$(MAKE) -C $(.global_srcdir) $(log-cmd)
-	sudo $(MAKE) -C $(.global_srcdir) install $(log-cmd)
-	$(MAKE) $(HOME)/.globalrc
+	$(call rcmake,$(.pkg-all-rcenv))
 	$(log-post)
 
-$(.global_srcdir):
+# Download global
+.global-src := $(pkg)/global-$(GLOBAL_VERSION)
+$(.global-src):
 	$(log-pre)
-	$(if $(wildcard $(@D)),,mkdir -p $(@D))
+	$(if $(wildcard $(@)),rm -rf $(@)/*,mkdir -p $(@))
 	curl -fsSL http://tamacom.com/global/global-$(GLOBAL_VERSION).tar.gz \
 		-o - | tar xzf - -C $(@D)
+	$(log-post)
+
+# Install pygments
+.PHONY: global-pygments
+global-pygments:
+	pip install pygments $(log-cmd)
+
+# Install global
+.pkg-all-rcenv := $(pkg-all)-rcenv
+$(.pkg-all-rcenv):| $(.global-src) global-pygments
+	$(log-pre)
+	(cd $(.global-src) && ./configure) $(log-cmd)
+	$(MAKE) -C $(.global-src) $(log-cmd)
+	sudo $(MAKE) -C $(.global-src) install $(log-cmd)
+	$(MAKE) $(HOME)/.globalrc $(log-cmd)
 	$(log-post)
