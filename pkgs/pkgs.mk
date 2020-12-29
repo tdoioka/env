@@ -80,6 +80,8 @@ $$(SHRC)/%.rc.zsh: $(1)/%.rc.zsh | $$(SHRC)
 	$$(call pkg-link,$$<,$$@)
 $$(SHRC)/%.rc.bash: $(1)/%.rc.bash | $$(SHRC)
 	$$(call pkg-link,$$<,$$@)
+$$(ZFUNC)/%: $(1)/%.func.zsh | $$(ZFUNC)
+	$$(call pkg-link,$$<,$$@)
 $$(HOME)/.%: $(1)/%.rc
 	$$(call pkg-link,$$<,$$@)
 endef

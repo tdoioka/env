@@ -6,6 +6,9 @@ if [[ ! -n "$LANG" ]]; then
   export LANG=C.UTF-8
 fi
 
+# Extra fpath
+fpath=(~/.shrc/zsh-funcs $fpath)
+
 # # Completion
 # # ..............................................................
 # autoload -Uz compinit && compinit

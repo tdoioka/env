@@ -27,7 +27,8 @@ DIRS =
 
 # Common shell rc directory in pkgs DIR
 SHRC := _shrc
-DIRS += $(SHRC)
+ZFUNC := $(SHRC)/zsh-funcs
+DIRS += $(SHRC) $(ZFUNC)
 # CACHED := _state
 DIRS += $(CACHED)
 
