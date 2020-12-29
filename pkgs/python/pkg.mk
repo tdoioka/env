@@ -38,7 +38,7 @@ $(pkg-update):
 
 $(pkg-all):
 	$(log-pre)
-	$(MAKE)	$(.pyenv-root) $(.pyenv-shrc) $(log-cmd)
+	$(MAKE)	$(.pyenv-root) $(.pyenv-shrc) $(.python-zshrc) $(log-cmd)
 	$(call rcmake,$(.pyenv-shrc),\
 		$(.pyenv-ver-dirs) $(.pyenv-version) $(.pipenv-bin))
 	$(log-post)
@@ -46,7 +46,7 @@ $(pkg-all):
 # pyenv
 # ================================================================
 # Environment variable
-.pyenv-shrc := $(SHRC)/pyenv.rc.sh
+.pyenv-shrc := $(SHRC)/pyenv.rc.bash
 .pyenv-git  := $(pkg)/pyenv.rc
 .pyenv-root := $(HOME)/.pyenv
 # All versions to install.
@@ -69,7 +69,7 @@ $(.pyenv-version):| $(.pyenv-ver-dirs) $(pyenv-shrc)
 # pipenv
 # ================================================================
 # Environment variable.
-.pipenv-shrc := $(SHRC)/pipenv.rc.sh
+.pipenv-shrc := $(SHRC)/pipenv.rc.bash
 .pipenv-bin  := $(HOME)/.local/bin/pipenv
 
 # Install pipenv
@@ -78,3 +78,7 @@ $(.pipenv-bin):| $(.pyenv-version) $(.pipenv-shrc)
 	pip install --upgrade pip $(log-cmd)
 	pip install --user --upgrade pipenv $(log-cmd)
 	$(log-post)
+
+# for zsh
+# ================================================================
+.python-zshrc := $(SHRC)/python.rc.zsh $(ZFUNC)/pipenv $(ZFUNC)/pyenv
