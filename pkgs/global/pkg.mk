@@ -21,7 +21,7 @@ $(pkg-update):
 
 $(pkg-all):
 	$(log-pre)
-	$(call rcmake,$(.pkg-all-rcenv))
+	$(call rcmake,$(SHRC)/pyenv.rc.bash,$(.pkg-all-rcenv))
 	$(log-post)
 
 # Download global
