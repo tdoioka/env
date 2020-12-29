@@ -4,6 +4,11 @@
 export PYENV_ROOT="$HOME/.pyenv"
 addpath "${PYENV_ROOT}/bin"
 
-eval "$(pyenv init -)"
-
-. ~/.shrc/pipenv.rc.sh
+if type pyenv >&/dev/null; then
+  eval "$(pyenv init -)"
+  if [[ -f ~/.shrc/pipenv.rc.sh ]]; then
+    . ~/.shrc/pipenv.rc.sh
+  fi
+else
+  echo "skip setup pyenv"
+fi
