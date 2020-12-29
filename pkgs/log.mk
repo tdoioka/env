@@ -1,14 +1,14 @@
 include path.conf
 
-# Logging directory.
-log-DIR ?= $(LOGD)
-DIRS += $(log-DIR)
-
 # Set BUILD-DATETIME
 export BUILDTIME := $(or $(BUILDTIME),$(shell date +%y%m%d.%H%M%S))
 
+# Logging directory.
+log-DIR ?= $(LOGD)/$(BUILDTIME)
+DIRS += $(log-DIR)
+
 # Set logfile path and pipewrite snipet
-.log-FNAME := log.$(BUILDTIME)
+.log-FNAME := log
 .log-FPATH := $(log-DIR)/$(.log-FNAME)
 .log-pipewrite := | tee -a $(.log-FPATH)
 
