@@ -4,39 +4,59 @@ source ~/.libsh/shlog
 
 emacslog=~/.emacs.d/log
 
-if ! type init_emacsd &>/dev/null; then
-  _init_emacsd() {
+if ! type edinit &>/dev/null; then
+  _edinit() {
     shlog qR ~/.emacs.d/log
     if ! pgrep '^emacs$' > /dev/null ; then
       echo "START: emacs daemon" 1>&2
       emacs --daemon
     fi
   }
-  init_emacsd() {
-    (_init_emacsd)
+  edinit() {
+    (_edinit)
   }
 fi
 
-if ! type kill_emacsd &>/dev/null; then
-  _kill_emacsd() {
+if ! type edkill &>/dev/null; then
+  _edkill() {
     shlog qR ~/.emacs.d/log
     if pgrep '^emacs$' > /dev/null; then
       echo 'KILL: emacs daemon' 1>&2
       emacsclient -e '(kill-emacs)'
     fi
   }
-  kill_emacsd() {
-    (_kill_emacsd)
+  edkill() {
+    (_edkill)
   }
 fi
 
 # start up emacs daemon
-init_emacsd
+edinit
 # set alias to emacs client
-alias e='emacsclient -t -a ""'
+# alias e='emacsclient -t -a ""'
+e () {
+  if ! emacsclient -e 0 > /dev/null 2>&1; then
+    edinit
+  fi
+  emacsclient -t -a "" "$@"
+}
+
 alias sue='sudo emacsclient -t -a ""'
+if ! type suedkill &>/dev/null ; then
+  _suedkill() {
+    shlog qR ~/.emacs.d/log
+    if pgrep '^emacs$' > /dev/null; then
+      echo 'KILL: emacs daemon' 1>&2
+      sudo emacsclient -e '(kill-emacs)'
+    fi
+  }
+  suedkill() {
+    (_suedkill)
+  }
+fi
+
 # default editor
-export EDITOR='emacsclient -t -a ""'
+export EDITOR='e'
 
 if [ -z "${DISPLAY:-}" ]; then
   export DISPLAY=:0

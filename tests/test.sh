@@ -75,8 +75,8 @@ main() {
   if [[ -e ~/.bash_profile ]]; then
     source ~/.bash_profile
   fi
-  if type kill_emacsd >&/dev/null; then
-    kill_emacsd
+  if type edkill >&/dev/null; then
+    edkill
   fi
   return 0
 }

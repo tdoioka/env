@@ -19,5 +19,6 @@ $(pkg-update):
 $(pkg-all):
 	$(log-pre)
 	$(MAKE) $(SHRC)/emacs.rc.sh $(HOME)/.emacs.d
-	bash -c "source $(SHRC)/emacs.rc.sh" $(log-cmd)
+	emacs --daemon $(log-cmd)
+	-emacsclient -e '(kill-emacs)' $(log-cmd)
 	$(log-post)
