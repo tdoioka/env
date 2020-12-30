@@ -70,7 +70,7 @@ zplug "mollifier/anyframe"
 
 # Directory change by fzf
 #   https://github.com/b4b4r07/enhancd
-zplug "b4b4r07/enhancd", use:enhancd.sh
+zplug "b4b4r07/enhancd", use:init.sh
 
 # Install plugins if there are plugins that have not been installed
 if ! zplug check --verbose; then
