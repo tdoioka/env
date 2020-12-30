@@ -29,27 +29,47 @@ source ~/.zshrc.d/zplug/init.zsh
 zplug 'zplug/zplug', hook-build:'zplug --self-manage'
 
 # Async processing
+#   https://github.com/mafredri/zsh-async
 zplug "mafredri/zsh-async"
+
 # Syntax Highlight
+#   https://github.com/zsh-users/zsh-syntax-highlighting
 zplug "zsh-users/zsh-syntax-highlighting"
+
 # History arrow key control
+#   https://github.com/zsh-users/zsh-history-substring-search
 zplug "zsh-users/zsh-history-substring-search"
+
 # History suggest
+#   https://github.com/zsh-users/zsh-autosuggestions
 zplug "zsh-users/zsh-autosuggestions"
+
 # Completion
+#   https://github.com/zsh-users/zsh-completions
 zplug "zsh-users/zsh-completions"
+
 # 256 Color
+#   https://github.com/chrissicool/zsh-256color
 zplug "chrissicool/zsh-256color"
+
 # Show elapsed times.
+#   https://github.com/popstas/zsh-command-time
 zplug "popstas/zsh-command-time"
+
 # git completion.
+#   https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/git
 # zplug "plugins/git", from:oh-my-zsh
 
 # fzf
+# ................................................................
 zplug "junegunn/fzf", as:command, use:bin/fzf-tmux
+
 # fzf I/F like an anything.
+#   https://github.com/mollifier/anyframe
 zplug "mollifier/anyframe"
+
 # Directory change by fzf
+#   https://github.com/b4b4r07/enhancd
 zplug "b4b4r07/enhancd", use:enhancd.sh
 
 # Install plugins if there are plugins that have not been installed
