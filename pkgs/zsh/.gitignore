@@ -1,2 +1,3 @@
 /zshrc.rc
-/*/zplug
+/zshrc.d.rc/zplug
+/zshrc.d.rc/cache

@@ -8,11 +8,14 @@ fi
 
 # Extra fpath
 fpath=(~/.shrc/zsh-funcs $fpath)
+# Cashe-dir
+ZCACHE=~/.zshrc.d/cache
+[[ -e $ZCACHE ]] || mkdir $ZCACHE
 
 # History
 # ..............................................................
 # History files
-HISTFILE=~/.zsh_history
+HISTFILE=$ZCACHE/zsh_history
 # History size on memory
 HISTSIZE=100000
 # History size on file
