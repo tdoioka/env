@@ -48,6 +48,49 @@ setopt hist_verify
 # When compeltion, expand history. (same as bang_hist.)
 setopt hist_expand
 
+# Enable CDR (change directory recent)
+# ################################################################
+autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
+add-zsh-hook chpwd chpwd_recent_dirs
+# recent-dirs-insert [always,fallback,both]
+zstyle ':completion:*' recent-dirs-insert both
+zstyle ':chpwd:*' recent-dirs-max 100000
+zstyle ':chpwd:*' recent-dirs-default true
+zstyle ':chpwd:*' recent-dirs-file "$ZCACHE/chpwd-recent-dirs"
+zstyle ':chpwd:*' recent-dirs-pushd true
+bindkey "^R^H" zaw-cdr
+# bindkey "^R^U" fzf-enhancd-up
+# Remove, invalid path.
+__zshrc::compaction-chpwd-recent-dirs() {
+  emulate -L zsh
+  setopt extendedglob
+  local -aU reply
+  integer history_size
+  autoload -Uz chpwd_recent_filehandler
+  chpwd_recent_filehandler
+  history_size=$#reply
+  reply=(${^reply}(N))
+  (( $history_size == $#reply )) || chpwd_recent_filehandler $reply
+}
+# add-zsh-hook chpwd __zshrc::compaction-chpwd-recent-dirs
+__zshrc::updirs() {
+  local dd=${1-$PWD}
+  if [[ $dd != / ]]; then
+    dd=$(realpath ${dd}/..)
+    echo $dd
+    __zshrc::updirs $dd
+  fi
+}
+__zshrc::fzf-updirs-widget() {
+  local dir=$(__zshrc::updirs | fzf)
+  if [[ -n "$dir" ]]; then
+    BUFFER="cd $dir"
+    zle accept-line
+  fi
+}
+zle -N __zshrc::fzf-updirs-widget
+bindkey "^R^U" __zshrc::fzf-updirs-widget
+
 # The zplug
 # ..............................................................
 source ~/.zshrc.d/zplug/init.zsh
@@ -139,27 +182,3 @@ unsetopt list_types
 # Select the completion candidates in order with TAB.
 # setopt auto_menu
 zstyle ':completion:*' matcher-list '' 'm:{a-z}={A-Z}' '+m:{A-Z}={a-z}' '+r:|[-_.]=**'
-
-# CDR (change directory recent)
-# ................................................................
-autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
-add-zsh-hook chpwd chpwd_recent_dirs
-# recent-dirs-insert [always,fallback,both]
-zstyle ':completion:*' recent-dirs-insert both
-zstyle ':chpwd:*' recent-dirs-max 100000
-zstyle ':chpwd:*' recent-dirs-default true
-zstyle ':chpwd:*' recent-dirs-file "$ZCACHE/chpwd-recent-dirs"
-zstyle ':chpwd:*' recent-dirs-pushd true
-# cdr compaction
-compaction-chpwd-recent-dirs() {
-  emulate -L zsh
-  setopt extendedglob
-  local -aU reply
-  integer history_size
-  autoload -Uz chpwd_recent_filehandler
-  chpwd_recent_filehandler
-  history_size=$#reply
-  reply=(${^reply}(N))
-  (( $history_size == $#reply )) || chpwd_recent_filehandler $reply
-}
-# add-zsh-hook chpwd compaction-chpwd-recent-dirs
