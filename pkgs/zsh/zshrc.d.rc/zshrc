@@ -129,8 +129,15 @@ zplug "popstas/zsh-command-time"
 # zplug "plugins/git", from:oh-my-zsh
 
 # fzf
+#   https://github.com/junegunn/fzf
 # ................................................................
 zplug "junegunn/fzf", as:command, use:bin/fzf-tmux
+# unset all bindings
+bindkey -r "^R"  # fzf-history-widget
+bindkey -r "^T"  # fzf-file-widget
+bindkey -r "^[c" # fzf-cd-widget
+bindkey "^R^D" fzf-cd-widget
+bindkey "^R^F" fzf-file-widget
 
 # fzf I/F like an anything.
 #   https://github.com/mollifier/anyframe
