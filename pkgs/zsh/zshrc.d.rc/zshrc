@@ -16,15 +16,37 @@ ZCACHE=~/.zshrc.d/cache
 setopt IGNOREEOF
 
 # History
-# ..............................................................
-# History files
+# http://zsh.sourceforge.net/Doc/Release/Options.html#History
+# ################################################################
+# History files.
 HISTFILE=$ZCACHE/zsh_history
-# History size on memory
+# History size on memory.
 HISTSIZE=100000
-# History size on file
+# History size on file.
 SAVEHIST=100000
+
 # Share history with diffrent tty.
 setopt share_history
+# Immediately append to history when execute command.
+setopt inc_append_history
+
+# Remove unnecessary blanks.
+setopt hist_reduce_blanks
+# Not record history When begin with spaces.
+setopt hist_ignore_space
+# Not record when duplicates.
+# setopt hist_ignore_dups
+# Remove old duplicate history.
+setopt hist_ignore_all_dups
+# Not record duplicate command.
+# setopt hist_save_no_dups
+# Not record history command.
+# setopt hist_no_store
+
+# When fetch history put it to prompt instead of immediately execute.
+setopt hist_verify
+# When compeltion, expand history. (same as bang_hist.)
+setopt hist_expand
 
 # The zplug
 # ..............................................................
