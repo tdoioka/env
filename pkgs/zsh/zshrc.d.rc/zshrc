@@ -12,6 +12,9 @@ fpath=(~/.shrc/zsh-funcs $fpath)
 ZCACHE=~/.zshrc.d/cache
 [[ -e $ZCACHE ]] || mkdir $ZCACHE
 
+# Disable exit C-d.
+setopt IGNOREEOF
+
 # History
 # ..............................................................
 # History files
