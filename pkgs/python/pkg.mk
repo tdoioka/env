@@ -25,6 +25,8 @@ python_requirements :=				\
 	libsqlite3-dev				\
 	libssl-dev				\
 	llvm					\
+	python-dev 				\
+	python3-dev 				\
 	python-openssl				\
 	tk-dev					\
 	wget					\
