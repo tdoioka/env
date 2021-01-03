@@ -106,10 +106,12 @@ __zshrc::updirs() {
 __zshrc::fzf-updirs-cd-widget() {
   local FZF_CMD='echo "$(__zshrc::updirs)"'
   local dir="$(__zshrc::eval-fzf-cmd)"
+  local ret=$?
   if [[ -n "$dir" ]]; then
     BUFFER="cd $dir"
     zle accept-line
   fi
+  return $ret
 }
 zle -N __zshrc::fzf-updirs-cd-widget
 bindkey "^R^U" __zshrc::fzf-updirs-cd-widget
