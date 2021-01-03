@@ -220,8 +220,12 @@ zstyle ':filter-select' extended-search yes # see below
 # zstyle ':filter-select' escape-descriptions no # display literal newlines, not \n, etc
 # zstyle ':zaw:git-files' default zaw-callback-append-to-buffer # set default action for git-files
 # zstyle ':zaw:git-files' alt zaw-callback-edit-file # set the alt action for git-files
+bindkey "^R" zaw-history
 bindkey "^R^R" zaw-history
 bindkey "^R^B" zaw-bookmark
+bindkey "^X^F" zaw-git-files
+bindkey "^X^P" zaw-process
+bindkey "^X^X" zaw-programs
 
 # Install plugins if there are plugins that have not been installed
 # ................................................................
