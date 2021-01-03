@@ -116,9 +116,9 @@ __zshrc::fzf-updirs-cd-widget() {
 zle -N __zshrc::fzf-updirs-cd-widget
 bindkey "^R^U" __zshrc::fzf-updirs-cd-widget
 
-# fzf ghq-cd
+# fzf ghq-put
 # ################################################################
-__zshrc::fzf-ghq-cd-widget() {
+__zshrc::fzf-ghq-put-widget() {
   local FZF_CMD="ghq list"
   local ghqroot="$(ghq root)"
   local git="git -C ${ghqroot}/{} -c color.ui=always"
@@ -128,13 +128,15 @@ __zshrc::fzf-ghq-cd-widget() {
   preview="$preview $git log --decorate=short -1 --color;"
   local FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --preview '$preview'"
   local dir="$(__zshrc::eval-fzf-cmd)"
+  local ret=$?
   if [[ -n "$dir" ]]; then
-    BUFFER="cd $ghqroot/$dir"
-    zle accept-line
+    LBUFFER="${LBUFFER}$ghqroot/$dir"
+    zle reset-prompt
   fi
+  return $ret
 }
-zle -N __zshrc::fzf-ghq-cd-widget
-bindkey "^R^E" __zshrc::fzf-ghq-cd-widget
+zle -N __zshrc::fzf-ghq-put-widget
+bindkey "^R^E" __zshrc::fzf-ghq-put-widget
 
 # fzf repo-cd
 ################################################################
