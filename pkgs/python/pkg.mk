@@ -40,15 +40,16 @@ $(pkg-update):
 
 $(pkg-all):
 	$(log-pre)
-	$(MAKE)	$(.pyenv-root) $(.pyenv-shrc) $(.python-zshrc) $(log-cmd)
-	$(call rcmake,$(.pyenv-shrc),\
-		$(.pyenv-ver-dirs) $(.pyenv-version) $(.pipenv-bin))
+	$(MAKE) $(.pyenv-root) $(.python-shrc) $(log-cmd)
+	$(call rcmake,$(.python-shrc),			\
+		$(.pyenv-ver-dirs) $(.pyenv-version)	\
+		$(.pipenv-bin) $(.python-tools))
 	$(log-post)
 
 # pyenv
 # ================================================================
 # Environment variable
-.pyenv-shrc := $(SHRC)/pyenv.rc.bash
+.python-shrc := $(SHRC)/python.rc.sh
 .pyenv-git  := $(pkg)/pyenv.rc
 .pyenv-root := $(HOME)/.pyenv
 # All versions to install.
@@ -71,16 +72,24 @@ $(.pyenv-version):| $(.pyenv-ver-dirs) $(pyenv-shrc)
 # pipenv
 # ================================================================
 # Environment variable.
-.pipenv-shrc := $(SHRC)/pipenv.rc.bash
 .pipenv-bin  := $(HOME)/.local/bin/pipenv
 
 # Install pipenv
-$(.pipenv-bin):| $(.pyenv-version) $(.pipenv-shrc)
+$(.pipenv-bin):| $(.pyenv-version)
 	$(log-pre)
 	pip install --upgrade pip $(log-cmd)
 	pip install --user --upgrade pipenv $(log-cmd)
 	$(log-post)
 
-# for zsh
+# Tools for developments to pyenv.
 # ================================================================
-.python-zshrc := $(SHRC)/python.rc.zsh $(ZFUNC)/pipenv $(ZFUNC)/pyenv
+# non
+.install-python-devtools := $(HOME)/bin/install-python-devtools
+$(.install-python-devtools): $(pkg)/install-python-devtools
+	$(call pkg-link,$<,$@) $(log-cmd)
+
+.python-tools := $(pkg-all)-tools
+$(.python-tools):| $(.pipenv-bin) $(.install-python-devtools)
+	$(log-pre)
+	bash -c $(.install-python-devtools)
+	$(log-post)

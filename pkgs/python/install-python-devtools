@@ -1,0 +1,9 @@
+#!/bin/bash
+
+pip install                                     \
+    pygments                                    \
+    'python-language-server[all]'               \
+    black                                       \
+    black-macchiato                             \
+    flake8                                      \
+    mypy
