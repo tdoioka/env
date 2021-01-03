@@ -111,6 +111,26 @@ __zshrc::fzf-updirs-cd-widget() {
 zle -N __zshrc::fzf-updirs-cd-widget
 bindkey "^R^U" __zshrc::fzf-updirs-cd-widget
 
+# fzf ghq-cd
+# ################################################################
+__zshrc::fzf-ghq-cd-widget() {
+  local FZF_CMD="ghq list"
+  local ghqroot="$(ghq root)"
+  local git="git -C ${ghqroot}/{} -c color.ui=always"
+  local preview=
+  preview="$preview $git remote -v | grep fetch;"
+  preview="$preview $git status -sb | head -n 50;"
+  preview="$preview $git log --decorate=short -1 --color;"
+  local FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --preview '$preview'"
+  local dir="$(__zshrc::eval-fzf-cmd)"
+  if [[ -n "$dir" ]]; then
+    BUFFER="cd $ghqroot/$dir"
+    zle accept-line
+  fi
+}
+zle -N __zshrc::fzf-ghq-cd-widget
+bindkey "^R^E" __zshrc::fzf-ghq-cd-widget
+
 # The zplug
 # ..............................................................
 source ~/.zshrc.d/zplug/init.zsh
