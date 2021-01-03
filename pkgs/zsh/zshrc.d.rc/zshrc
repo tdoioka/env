@@ -15,6 +15,9 @@ ZCACHE=~/.zshrc.d/cache
 # Disable exit C-d.
 setopt IGNOREEOF
 
+# Enable auto cd, cd command can omitted.
+setopt AUTO_CD
+
 # History
 # http://zsh.sourceforge.net/Doc/Release/Options.html#History
 # ################################################################
