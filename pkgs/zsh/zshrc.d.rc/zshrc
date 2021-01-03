@@ -73,6 +73,25 @@ __zshrc::compaction-chpwd-recent-dirs() {
   (( $history_size == $#reply )) || chpwd_recent_filehandler $reply
 }
 # add-zsh-hook chpwd __zshrc::compaction-chpwd-recent-dirs
+
+# fzf-zsh common
+# ################################################################
+__zshrc::eval-fzf-cmd() {
+  setopt localoptions pipefail no_aliases 2> /dev/null
+  local item
+  eval "$FZF_CMD" |
+    FZF_DEFAULT_OPTS="--height ${FZF_TMUX_HEIGHT:-40%} --reverse $FZF_DEFAULT_OPTS $FZF_CTRL_T_OPTS" $(__fzfcmd) -m "$@" |
+    while read item
+    do
+      echo -n "${(q)item} "
+    done
+  local ret=$?
+  echo
+  return $ret
+}
+
+# fzf updirs-cd
+# ################################################################
 __zshrc::updirs() {
   local dd=${1-$PWD}
   if [[ $dd != / ]]; then
@@ -81,15 +100,16 @@ __zshrc::updirs() {
     __zshrc::updirs $dd
   fi
 }
-__zshrc::fzf-updirs-widget() {
-  local dir=$(__zshrc::updirs | fzf)
+__zshrc::fzf-updirs-cd-widget() {
+  local FZF_CMD='echo "$(__zshrc::updirs)"'
+  local dir="$(__zshrc::eval-fzf-cmd)"
   if [[ -n "$dir" ]]; then
     BUFFER="cd $dir"
     zle accept-line
   fi
 }
-zle -N __zshrc::fzf-updirs-widget
-bindkey "^R^U" __zshrc::fzf-updirs-widget
+zle -N __zshrc::fzf-updirs-cd-widget
+bindkey "^R^U" __zshrc::fzf-updirs-cd-widget
 
 # The zplug
 # ..............................................................
