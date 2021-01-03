@@ -131,6 +131,25 @@ __zshrc::fzf-ghq-cd-widget() {
 zle -N __zshrc::fzf-ghq-cd-widget
 bindkey "^R^E" __zshrc::fzf-ghq-cd-widget
 
+# fzf repo-cd
+################################################################
+__zshrc::fzf-repo-cd-widget() {
+  local FZF_CMD="repo list -f | awk '{print \$1}'"
+  local git="git -C {} -c color.ui=always"
+  local preview=
+  preview="$preview $git remote -v | grep fetch;"
+  preview="$preview $git status -sb | head -n 50;"
+  preview="$preview $git log --decorate=short -1 --color;"
+  local FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --preview '$preview'"
+  local dir="$(__zshrc::eval-fzf-cmd)"
+  if [[ -n "$dir" ]]; then
+    BUFFER="cd $ghqroot/$dir"
+    zle accept-line
+  fi
+}
+zle -N __zshrc::fzf-repo-cd-widget
+bindkey "^R^P"  __zshrc::fzf-repo-cd-widget
+
 # The zplug
 # ..............................................................
 source ~/.zshrc.d/zplug/init.zsh
