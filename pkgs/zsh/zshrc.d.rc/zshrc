@@ -51,6 +51,9 @@ setopt hist_verify
 # When compeltion, expand history. (same as bang_hist.)
 setopt hist_expand
 
+# record start and end
+setopt EXTENDED_HISTORY
+
 # Enable CDR (change directory recent)
 # ################################################################
 autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
