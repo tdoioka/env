@@ -21,7 +21,6 @@ err_exit() {
 }
 
 parse_args() {
-  args=()
   while [[ "$#" -ne 0 ]]; do
     case "$1" in
       -l)
@@ -36,11 +35,11 @@ parse_args() {
         ;;
       --)
         shift
-        args=("${args[@]}" "$@")
+        args=("${args[@]:-}" "$@")
         break
         ;;
       *)
-        args=("${args[@]}" "$1")
+        args=("${args[@]:-}" "$1")
         shift
         ;;
     esac
@@ -52,8 +51,9 @@ function aptinstall() {
 }
 
 main() {
+  local args=()
   parse_args "$@"
-  if [[ ! -n "${opt_nosync:-}" ]]; then
+  if [[ -z "${opt_nosync:-}" ]]; then
     if ! type rsync >& /dev/null ; then
       aptinstall rsync
     fi
@@ -67,8 +67,8 @@ main() {
   local log
   log="log/$(date +%y%m%d.%H%M%S).log"
   mkdir -p "$(dirname "$log")"
-  echo ">>>> $env/setup.sh ${args[*]} > $log"
-  time "$env/setup.sh" "${args[@]}" 2>&1 | tee -a "$log"
+  echo ">>>> $env/setup.sh ${args[*]:-} > $log"
+  time "$env/setup.sh" "${args[@]:-}" 2>&1 | tee -a "$log"
   echo "@@@@ $?"
   times
   # reset environment

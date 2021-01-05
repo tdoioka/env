@@ -6,6 +6,9 @@ export LANG=C.UTF-8
 
 include path.conf
 
+# This OS version
+lsb-v:=$(shell lsb_release -c | awk '{print $$NF}')
+
 ################################################################
 # Goal
 pkg-goal := $(or $(MAKECMDGOALS),$(.DEFAULT_GOAL),all)
@@ -192,13 +195,17 @@ APTPATH := /etc/apt/sources.list /etc/apt/sources.list.d/*
 PKG_REPOS_LIST := $(wildcard $(APTPATH)) /dev/null
 .pkg-repolock := flock /etc/apt/sources.list
 
+.addrepo-opt_xenial := -y
+.addrepo-opt_bionic := -n -y
+.addrepo-opt:=$(.addrepo-opt_$(lsb-v))
+
 define pkg-addrepo
 	$(call $(if $(2),.pkg-addrepo2,.pkg-addrepo1),$(1),$(2))
 	rm -vf $(.pkg-updated) $(log-cmd)
 endef
 define .pkg-addrepo2
 	$(call log-infw,Add repos [$(1):$(2)])
-	$(if $(call .pkg-isnorepo,$(2)),$(call .pkg-addrepo,-n -y $(1):$(2)))
+	$(if $(call .pkg-isnorepo,$(2)),$(call .pkg-addrepo,$(.addrepo-opt) $(1):$(2)))
 endef
 define .pkg-addrepo1
 	$(call log-infw,Add repos [$(1)])

@@ -28,13 +28,31 @@ function init_install() {
       sudo apt-get -qq update >> "$log"
       sudo apt-get -qq upgrade -y >> "$log"
       ptouch "$done"
-      aptinstall make
+      aptinstall make lsb-release
     fi
     return 0
   fi
   return 1
 }
+
+function check_version() {
+  local codename="$(lsb_release -c | awk '{print $NF}')"
+  case ${codename} in
+    xenial) ;; # Ubuntu 16.04
+    bionic) ;; # Ubuntu 18.04
+    *)
+      echo "Not supported OS version : ${codename} !!!"
+      if [[ -z "${FORCE:-}" ]] ; then
+        echo "If you want to force installation set environment variable \`FORCE=1'."
+        return 1
+      fi
+      ;;
+  esac
+  return 0
+}
+
 CPU="$(grep -e '^proc' /proc/cpuinfo | wc -l)"
 
 init_install
-make -C "$PKGSD" -j "${CPU}" "$@"
+check_version
+eval -- make -C "$PKGSD" -j "${CPU}" "${@:-}"
