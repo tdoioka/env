@@ -300,6 +300,10 @@
    pipenv-projectile-after-switch-function
    #'pipenv-projectile-after-switch-extended))
 
+(use-package python-black
+  :demand t
+  :after python)
+
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; flycheck
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
