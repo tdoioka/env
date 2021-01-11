@@ -1,9 +1,19 @@
 #!/bin/bash
 
-pip install                                     \
-    pygments                                    \
-    'python-language-server[all]'               \
-    black                                       \
-    black-macchiato                             \
-    flake8                                      \
-    mypy
+__install-python-devtools::main() {
+  local python_version pip_cmd
+  python_version="$(pip -V | sed 's@.*(python \([^.]*\).*@\1@g')"
+  pip_cmd=pip
+
+  if [[ ${python_version} -ne 3 ]] ; then
+    pip_cmd=pip3
+  fi
+  ${pip_cmd} install                            \
+         pygments                               \
+         'python-language-server[all]'          \
+         black                                  \
+         black-macchiato                        \
+         flake8                                 \
+         mypy
+}
+__install-python-devtools::main
