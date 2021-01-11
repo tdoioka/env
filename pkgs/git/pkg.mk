@@ -13,7 +13,8 @@ $(pkg-update):
 	$(log-post)
 
 $(pkg-all):
-	$(log-pre)
-	$(MAKE) $(HOME)/.gitconfig \
-		$(HOME)/.gitconfig.d
+	$(log-pre)				\
+	$(MAKE) $(HOME)/.gitconfig		\
+		$(HOME)/.gitconfig.d		\
+		$(SHRC)/git.rc.sh
 	$(log-post)
