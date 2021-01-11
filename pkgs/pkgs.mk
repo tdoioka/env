@@ -62,7 +62,7 @@ clean: clean.$(1)
 clean.$(1):
 	$$(log-pre)
 	$$(if $$($(1)-state),-rm -v $$($(1)-state) $$(log-cmd))
-	$$(log-post)
+	$$(call log-dbg,DONE)
 
 .PHONY: clean-r clean-r.$(1)
 clean-r: clean
@@ -73,7 +73,7 @@ upgrade: upgrade.$(1)
 upgrade.$(1): clean.$(1)
 	$$(log-pre)
 	$$(MAKE) $(1)
-	$$(log-post)
+	$$(call log-dbg,DONE)
 endef
 
 define pkg-link-task
