@@ -15,6 +15,7 @@ $(pkg-update):
 		less				\
 		nkf				\
 		rsync				\
+		bc				\
 		)
 	$(log-post)
 

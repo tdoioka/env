@@ -9,10 +9,15 @@ loadshrc() {
              grep -v "${HOME}/.shrc/funcs.rc.sh" |
              grep -v "${HOME}/.shrc/loader.rc.sh"))
   if [ -n "${SHRCS[*]}" ]; then
+    local ts_bef ts_now ts_start
+    ts_start=$(date +%s.%N)
     for rc in "${SHRCS[@]}"; do
-      echo "load: $rc" >&2
+      local ts_bef=${ts_now:-$(date +%s.%N)}
       source "$rc"
+      ts_now=$(date +%s.%N)
+      echo -e "load: $rc\t[$(bc <<< "scale=6; ($ts_now - $ts_bef) / 1")]" >&2
     done
+    echo "total: $(bc <<< "scale=6; ($ts_now - $ts_start) / 1") sec" >&2
   fi
 }
 
