@@ -1,21 +1,32 @@
 #!/bin/bash
 
-# Change user:gropu to same as execution directory.
-HOST_UID=${HOST_UID:-$(stat -c %u "$PWD")}
-HOST_GID=${HOST_GID:-$(stat -c %g "$PWD")}
+# Container User name.
+CUSER=${CUSER:-user}
+CHOME=/home/${CUSER}
+# Get user UID and GID from /work directory for Chane IDs to same.
+HOST_UID=${HOST_UID:-$(stat -c %u /work)}
+HOST_GID=${HOST_GID:-$(stat -c %g /work)}
 
-[[ $HOST_UID -ne $(id -u user) ]] \
-  && usermod -u "$HOST_UID" -o -m user -d /home/user
-[[ $HOST_GID -ne $(id -g user) ]] \
-  && groupmod -g "$HOST_GID" user
+# Change user name and home dir.
+if [[ "${CUSER}" != user ]]; then
+  groupmod -n "${CUSER}" user
+  usermod  -l "${CUSER}" user
+  usermod  -d "${CHOME}" -m "${CUSER}"
+fi
+# Change user UID and GID.
+if [[ $HOST_UID -ne $(id -u "${CUSER}") ]] ||
+     [[ $HOST_GID -ne $(id -g "${CUSER}") ]]; then
+  groupmod -g "${HOST_GID}" "${CUSER}"
+  usermod  -u "${HOST_UID}" "${CUSER}"
+  chown "${HOST_UID}:${HOST_GID}" -R "${CHOME}"
+fi
 
 # Copy test environment.
-ln -s /work /home/user/lenv
-cp -ra /work/ /home/user/env
+ln -s  /work  "${CHOME}"/lenv
+cp -ra /work/ "${CHOME}"/env
 for test in /work/tests/test*.sh; do
-  install -m 755 $test /home/user/$(basename -s ".sh" "$test")
+  install -m 755 "$test" "${CHOME}/$(basename -s ".sh" "$test")"
 done
-cd /home/user || exit
 
 # Launch up new tty for emacsclient connection.
 cat << __eof__ > /tmp/runscript
@@ -24,4 +35,4 @@ script -c 'exec $@' /dev/null
 __eof__
 chmod a+rx /tmp/runscript
 
-exec /usr/sbin/gosu user /tmp/runscript
+exec /usr/sbin/gosu "${CUSER}" /tmp/runscript

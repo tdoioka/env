@@ -1,54 +1,38 @@
-IMAGES := u20 u18 u16
-DEFENV := u18
+# Specify bash for shell.
+SHELL:=sh
+SHELL:=$(shell which bash)
+# Disable implicit tasks and variable
+MAKEFLAGS += --no-builtin-rules --no-builtin-variables
 
-DOCDIR=tests
-
-################################################################
-## Management
-################################################################
-TASKS=envrun envcon envclean
-.PHONY: $(TASKS)
-$(TASKS): %: $(DEFENV).%
-
-################################################################
-## Environment run/connect/clean
-################################################################
-.name=$(basename $@)
-
-RUNS := $(IMAGES:%=%.envrun)
-.PHONY: $(RUNS)
-$(RUNS):
-	$(MAKE) -C $(DOCDIR) $(.name)env CWD=$(PWD)
-
-CONS := $(IMAGES:%=%.envcon)
-.PHONY: $(CONS)
-$(CONS):
-	$(MAKE) -C $(DOCDIR) $(.name)env.con
-
-CLEANS := $(IMAGES:%=%.envclean)
-.PHONY: $(CLEANS)
-$(CLEANS):
-	$(MAKE) -C $(DOCDIR) $(.name)env.clean
-
+################################################################################
+# Overridable values
+################################################################################
+# default BASE_IMAGE.
+IMAGE ?= u18
+# connection user.
+CUSER ?= user
+# Default goal task
+.DEFAULT_GOAL = $(IMAGE)
+################################################################################
+# help
+################################################################################
+.PHONY: help
 help:
-	@echo "Usage:"
-	@echo ""
-	@echo "make <IMAGE>.<TASK>"
-	@echo ""
-	@echo "	IMAGE:"
-	@echo "		$(IMAGES)"
-	@echo "		u = Ubuntu, Number is madjor release version."
-	@echo ""
-	@echo "	TASK:"
-	@echo "		envrun:"
-	@echo "			Run docker environment container for test,"
-	@echo "			build image When not exist."
-	@echo "		envcon:"
-	@echo "			Connect to already running docker container."
-	@echo "		envclean:"
-	@echo "			Delete docker environment container image."
+	@$(MAKE) --no-print-directory -C $(dockerd) $@
 
-edits := edit clean.edit
-.PHONY: $(edits)
-$(edits):
-	$(MAKE) -C pkgs $@
+################################################################################
+# under ./tests tasks, inherit all commands
+################################################################################
+dockerd = tests
+images = u20 u18 u16
+tasks = enter start stop stopall restart build clean rebuild
+
+targets = $(foreach image,$(images),$(foreach task,$(tasks),$(image).$(task)))
+targets += $(images) $(tasks)
+.PHONY: $(targets) $(dockerd)
+$(targets):
+	$(if $(wildcard $(dockerd)),\
+		$(MAKE) -C $(dockerd) $@)
+
+$(dockerd):
+	$(if $(wildcard $@),$(MAKE) -C $@)

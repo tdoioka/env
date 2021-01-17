@@ -1,5 +1,4 @@
-ARG BASE_IMAGE
-
+ARG BASE_IMAGE=ubuntu:18.04
 FROM $BASE_IMAGE
 
 RUN apt update && apt install -y --no-install-recommends \
