@@ -30,6 +30,7 @@ $(pkg-all):
 	$(MAKE) $(SHRC_LOADER)			\
 		$(SHRC)/funcs.rc.sh		\
 		$(SHRC)/alias.rc.sh		\
+		$(SHRC)/ssh-agent.rc.sh		\
 		$(HOME)/.shrc			\
 		$(HOME)/.bash_profile
 	$(log-post)
