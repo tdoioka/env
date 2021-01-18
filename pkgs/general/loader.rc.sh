@@ -15,9 +15,9 @@ loadshrc() {
       local ts_bef=${ts_now:-$(date +%s.%N)}
       source "$rc"
       ts_now=$(date +%s.%N)
-      echo -e "load: $rc\t[$(bc <<< "scale=6; ($ts_now - $ts_bef) / 1")]" >&2
+      printf "load: %-40.40s[%8.6f]\n" "$rc" "$(bc <<< "$ts_now - $ts_bef")" >&2
     done
-    echo "total: $(bc <<< "scale=6; ($ts_now - $ts_start) / 1") sec" >&2
+    printf "total: %8.6f sec\n" "$(bc <<< "$ts_now - $ts_start")" >&2
   fi
 }
 
