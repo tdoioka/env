@@ -90,41 +90,45 @@ bind-key m if-shell \
 
 # draw interval
 set-option -g status-interval 1
+set -g status-position bottom
 
 # status bar length
 set-option -g status-left-length 30
-set-option -g status-right-length 80
+#set-option -g status-right-length 80
 
-# status bar
-set -g status-right "#(bash ~/dotfiles/tmux.d/info.sh)"
+# left status
+set-option -g status-left "\
+#[bg=colour087,fg=colour234][#S:#I.#P]\
+#[bg=colour062,fg=colour255] #h \
+#[bg=colour024,fg=colour255] #(hostname -I | grep -oE '[0-9\.]{7,}' | sort ) "
 
+# right status
+set-option -g status-right "\
+#[bg=colour024,fg=colour255] %F/%T "
 
-################################################################
-# color settings
-################################################################
+# status format
+set-window-option -g window-status-format " #I:#W "
+set-window-option -g window-status-current-format "(#I:#W)"
 
-#### pane
-# inactive pane
-set -g pane-border-fg green
-set -g pane-border-bg black
-# active pane
-set -g pane-active-border-fg white
-set -g pane-active-border-fg yellow
+# pane border
+set -g pane-border-bg colour000
+set -g pane-border-fg colour008
+set -g pane-active-border-bg colour000
+set -g pane-active-border-fg colour046
 
-#### status bar
-set -g status-fg white
-set -g status-bg blue
-#### window list
-setw -g window-status-fg cyan
+set-option -g status-justify left
+set -g status-fg default
+set -g status-bg colour017
+
+setw -g window-status-fg colour242
 setw -g window-status-bg default
-setw -g window-status-attr dim
-#### active window
-setw -g window-status-current-fg white
-setw -g window-status-current-bg cyan
+setw -g window-status-attr none
+
+setw -g window-status-current-fg colour255
+setw -g window-status-current-bg colour027
 setw -g window-status-current-attr bright
 
-#### command line
+##### command line
 set -g message-fg white
-set -g message-bg black
+set -g message-bg colour017
 set -g message-attr bright
-
