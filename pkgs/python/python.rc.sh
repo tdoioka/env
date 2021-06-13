@@ -4,6 +4,7 @@
 # setup  pyenv
 export PYENV_ROOT="$HOME/.pyenv"
 addpath "${PYENV_ROOT}/bin"
+eval "$(pyenv init --path)"
 eval "$(pyenv init -)"
 
 # disable virtual-env prompt display
