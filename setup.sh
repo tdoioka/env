@@ -51,7 +51,7 @@ function check_version() {
   return 0
 }
 
-CPU="$(grep -e '^proc' /proc/cpuinfo | wc -l)"
+: "${CPU:="$(grep -e '^proc' /proc/cpuinfo | wc -l)"}"
 
 init_install
 check_version
