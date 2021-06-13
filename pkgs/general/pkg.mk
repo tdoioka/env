@@ -16,6 +16,7 @@ $(pkg-update):
 		nkf				\
 		rsync				\
 		bc				\
+		ssh 				\
 		)
 	$(log-post)
 
