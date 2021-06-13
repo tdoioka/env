@@ -1,4 +1,4 @@
-EXA_VERSION ?= 0.9.0
+EXA_VERSION ?= 0.10.1
 BAT_VERSION ?= 0.17.1
 HEXYL_VERSION ?= 0.8.0
 FD_VERSION ?= 8.2.1
@@ -39,7 +39,7 @@ moderns += $(HOME)/bin/$(1)
 $(pkg)/dl/$(notdir $(.$(1)-url)):| $(pkg)/dl
 	curl -fsSL $(.$(1)-url) -o $$@ $$(log-cmd)
 $(pkg)/dl/$(.$(1)-unzip):$(pkg)/dl/$(notdir $(.$(1)-url))
-	unzip -o $$< -d $$(@D) $$(log-cmd)
+	unzip -jo $$< -d $$(@D) $$(log-cmd)
 $(HOME)/bin/$(1):$(pkg)/dl/$(.$(1)-unzip)
 	$$(call pkg-link,$$<,$$@) $$(log-cmd)
 endef
@@ -47,12 +47,12 @@ endef
 # exa
 # ================================================================
 # binary
-.exa-url := https://github.com/ogham/exa/releases/download/v$(EXA_VERSION)/exa-linux-x86_64-$(EXA_VERSION).zip
-.exa-unzip := exa-linux-x86_64
+.exa-url := https://github.com/ogham/exa/releases/download/v$(EXA_VERSION)/exa-linux-x86_64-v$(EXA_VERSION).zip
+.exa-unzip := exa
 $(eval $(call install-zip,exa))
 
 # completions
-.exa-zshcmp-url := https://raw.githubusercontent.com/ogham/exa/master/completions/completions.zsh
+.exa-zshcmp-url := https://raw.githubusercontent.com/ogham/exa/master/completions/zsh/_exa
 $(pkg)/_exa.func.zsh:
 	curl -fsSL $(.exa-zshcmp-url) -o $@ $(log-cmd)
 moderns += $(ZFUNC)/_exa
