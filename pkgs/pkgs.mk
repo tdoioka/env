@@ -197,6 +197,7 @@ PKG_REPOS_LIST := $(wildcard $(APTPATH)) /dev/null
 
 .addrepo-opt_xenial := -y
 .addrepo-opt_bionic := -n -y
+.addrepo-opt_focal := -n -y
 .addrepo-opt:=$(.addrepo-opt_$(lsb-v))
 
 define pkg-addrepo
