@@ -8,10 +8,7 @@ $(pkg-preup):
 
 $(pkg-update):
 	$(log-pre)
-	$(call pkg-schedule,			\
-		curl				\
-		ca-certificates			\
-		)
+	$(call pkg-schedule,curl)
 	$(log-post)
 
 $(pkg-all):
