@@ -36,10 +36,11 @@ function init_install() {
 }
 
 function check_version() {
-  local codename="$(lsb_release -c | awk '{print $NF}')"
+  local codename="$(lsb_release -cs)"
   case ${codename} in
     xenial) ;; # Ubuntu 16.04
     bionic) ;; # Ubuntu 18.04
+    focal)  ;; # Ubuntu 20.04
     *)
       echo "Not supported OS version : ${codename} !!!"
       if [[ -z "${FORCE:-}" ]] ; then
