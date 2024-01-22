@@ -201,6 +201,7 @@ ___bb_for_each() {
     mapfile -t rcps < <(___bb_put_rcp_from_arg "$@")
     if [ "${#rcps[@]}" -gt 1 ]; then
       local cnt=0
+      ___bb_time_mute=1 # mute for each time command.
       time for rcp in "${rcps[@]}"; do
         cnt=$((cnt+1))
         "${eachcmd}" "${rcp}" "${cnt}" "${#rcps[@]}" || ret="$?"
