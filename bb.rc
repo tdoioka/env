@@ -182,15 +182,15 @@ bblc() { bbl scd "$@"; ___bb_bel; }
 # combination
 # ================================================================
 ___bb_set_wd() {
-  if [ -z "${WD-}" ]; then
+  if [ -z "${___BB_TMP_WD-}" ]; then
     # when PWD is BUILDDIRE create subdir because it gets messy.
     if [ "${PWD}" = "${BUILDDIR}" ]; then
-      WD="${1}"
+      ___BB_TMP_WD="${1}"
     else
-      WD="."
+      ___BB_TMP_WD="."
     fi
   fi
-  mkdir -p "${WD}"
+  mkdir -p "${___BB_TMP_WD}"
 }
 
 ___bb_for_each() {
@@ -223,13 +223,13 @@ ___bbe_one() {
     outf="env"
   fi
   if [ $# -ge 3 ]; then
-    ___bb_inf "$(printf '%4d/%4d :: bitbake -e %s > %s' "$2" "$3" "$1" "${WD}/${outf}")"
+    ___bb_inf "$(printf '%4d/%4d :: bitbake -e %s > %s' "$2" "$3" "$1" "${___BB_TMP_WD}/${outf}")"
   else
-    ___bb_inf "bitbake -e $1 > ${WD}/${outf}"
+    ___bb_inf "bitbake -e $1 > ${___BB_TMP_WD}/${outf}"
   fi
   # shellcheck disable=SC2086 # intent to give no argument if empty.
-  if bb -e ${1} > "${WD}/.${outf}"; then
-    mv "${WD}/.${outf}" "${WD}/${outf}"
+  if bb -e ${1} > "${___BB_TMP_WD}/.${outf}"; then
+    mv "${___BB_TMP_WD}/.${outf}" "${___BB_TMP_WD}/${outf}"
   else
     ret="$?"
   fi
@@ -237,24 +237,26 @@ ___bbe_one() {
 }
 ## bitbake -e
 bbe() {
-  ___bb_set_wd "${BBENVCACHE}"
-  ___bb_for_each ___bbe_one "$@"
-  ___bb_bel
+  ({
+    ___bb_set_wd "${BBENVCACHE}"
+    ___bb_for_each ___bbe_one "$@"
+    ___bb_bel
+  })
 }
 
 BBGRAPH="bbgs"
 ___bbg_one() {
   local outd="${1}" ret=0
-  mkdir -p "${WD}/.${outd}"
+  mkdir -p "${___BB_TMP_WD}/.${outd}"
   if [ $# -ge 3 ]; then
-    ___bb_inf "$(printf '%4d/%4d :: (%s) bitbake -g %s' "$2" "$3" "${WD}/$1" "${outd}")"
+    ___bb_inf "$(printf '%4d/%4d :: (%s) bitbake -g %s' "$2" "$3" "${___BB_TMP_WD}/$1" "${outd}")"
   else
-    ___bb_inf "(${WD}/$1) bitbake -g $1"
+    ___bb_inf "(${___BB_TMP_WD}/$1) bitbake -g $1"
   fi
   # shellcheck disable=SC2086 # intent to give no argument if empty.
-  if (cd "${WD}/.${outd}" && bb -g ${1}); then
-    rm -rf "${WD:?}/${outd}"
-    mv "${WD}/.${outd}" "${WD}/${outd}"
+  if (cd "${___BB_TMP_WD}/.${outd}" && bb -g ${1}); then
+    rm -rf "${___BB_TMP_WD:?}/${outd}"
+    mv "${___BB_TMP_WD}/.${outd}" "${___BB_TMP_WD}/${outd}"
   else
     ret="$?"
   fi
@@ -262,9 +264,11 @@ ___bbg_one() {
 }
 ## bitbake -g
 bbg() {
-  ___bb_set_wd "${BBGRAPH}"
-  ___bb_for_each ___bbg_one "$@"
-  ___bb_bel
+  ({
+    ___bb_set_wd "${BBGRAPH}"
+    ___bb_for_each ___bbg_one "$@"
+    ___bb_bel
+  })
 }
 
 BBSTAT="stats"
@@ -274,9 +278,9 @@ bbstat() {
     set -ueo pipefail
     local ret=0
     ___bb_set_wd "${BBSTAT}"
-    mkdir -p "${WD}"
+    mkdir -p "${___BB_TMP_WD}"
 
-    cd "${WD}"
+    cd "${___BB_TMP_WD}"
     # bbll > .layers.log
     # ___bbll_tsv .layers.log > layers.tsv
     ___bb_time_mute=1
