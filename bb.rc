@@ -1,0 +1,586 @@
+#!/usr/bin/env bash
+
+# When local functions declare:
+# This script will be loaded into the console (by '.' or 'source' command),
+# so you need to be careful about the function name.
+# Use function name start with triple underscore begining (___).
+# Because '_' and '__' are used by completion system in bash and zsh.
+
+# ================================================================
+# internal used.
+# ================================================================
+___is_sourced() {
+  #
+  # Check context is 'source' or '.'
+  # This function is not support direct call by console.
+  #
+  if [ -n "${BASH_VERSION}" ] && [ "${BASH_SOURCE[0]}" != "${0}" ]; then
+    # bash with source or . command
+    return 0
+  elif [ -n "${ZSH_VERSION}" ] && [[ "${ZSH_EVAL_CONTEXT}" != *toplevel* ]]; then
+    # when toplevel not found.
+    # zsh with source or . command
+    return 0
+  fi
+  # Unsupported shell or not sourced.
+  echo 'This script is intended to be used as a "source" or "." argument. It also supports only bash and zsh.' >&2
+  return 1
+}
+# Assuming to loaded by not supported shell,
+# try return command and then exit command for avoid console down.
+___is_sourced || return 1 &>/dev/null || exit 1
+
+# shellcheck disable=SC2120 # argumente 1 is optional.
+___is_topfunc() {
+  #
+  # Returns 0 if the call stack is the same or shallow compared to the specified
+  # value.
+  # $1: default is 1
+  #
+  local sc
+  if [ -n "${BASH_VERSION}" ]; then
+    sc="${#FUNCNAME[@]}"
+  elif [ -n "${ZSH_VERSION}" ]; then
+    # shellcheck disable=SC2154 # in use zsh code.
+    sc="${#funcstack[@]}"
+  else
+    echo '___is_topfunc: Not supported shell' >&2;
+    return 1
+  fi
+  if [ $((sc - 1)) -le "${1-1}" ]; then return 0; fi
+  return 1
+}
+
+___bb_inf() {
+  printf '@@@@ %s\n' "$*" >&2
+}
+___bb_put() {
+  printf '%s\n' "$*"
+}
+___bb_put_rcp_from_arg() {
+  #
+  # get recipe names in bitbake command arguments.
+  #
+  while [ $# -gt 0 ]; do
+    case $1 in
+      -c)  shift ;;               # Skip next argument
+      *:*) ___bb_put "${1%:*}" ;; # Pattern for "recipe:task"
+      *)   ___bb_put "$1"      ;; # Pattern for recipe name only
+    esac
+    shift
+  done
+}
+___bb_cmd() {
+  #
+  # execute command whith time and run and finish notify
+  #
+  local ret=0
+  ___bb_inf "START:: $*"
+  # printf 'arg: %s\n' "$@"
+  if [ -n "${___bb_time_mute:-}" ]; then
+    # Use printf to avoid spliting argument which contains whitespace.
+    # shellcheck disable=SC2046 # intented spliting with whitespace.
+    eval $(printf '"%s" ' "$@")
+  else
+    # shellcheck disable=SC2046 # intented spliting with whitespace.
+    time eval $(printf '"%s" ' "$@")
+  fi
+  ret="$?"
+  ___bb_inf "END[$ret]:: $*"
+  return $ret
+}
+
+___bb_bel() {
+  #
+  # put bell
+  #
+  # Save the return value
+  local ret=$?
+  if ___is_topfunc 2; then
+    case "${mute-}" in
+      true|TRUE|1) ;;
+      *) tput bel >&2 ;;
+    esac
+  fi
+  return "$ret"
+}
+
+# ================================================================
+# bitbake bitbake-layers
+# ================================================================
+
+## bitbake with time
+bb() { ___bb_cmd bitbake "$@"; ___bb_bel; }
+___bb_task() {
+  local rcps task
+  task=$1; shift
+  mapfile -t rcps < <(___bb_put_rcp_from_arg "$@")
+  bb -c "${task}" "${rcps[@]}"
+}
+## bitbake clean
+bbc()  { ___bb_task do_clean "$@"; ___bb_bel; }
+## bitbake clean-sstate
+bbcc() { ___bb_task do_cleansstate "$@"; ___bb_bel; }
+## bitbake clean-all
+bbccc() { ___bb_task do_cleanall "$@"; ___bb_bel; }
+## bitbake clean and bitbake
+bbr() { bbc "$@" && bb "$@"; ___bb_bel; }
+## bitbake cleansstate and bitbake
+bbrr() { bbcc "$@" && bb "$@"; ___bb_bel; }
+## bitbake cleanall and bitbake
+bbrrr() { bbccc "$@" && bb "$@"; ___bb_bel; }
+## bitbake --ranall=$1 $2
+bbra()  {
+  local cmd="$1"; shift;
+  bb --runall="${cmd}" "$@";
+  ___bb_bel
+}
+## bitabke --runall=do_fetch "$@"
+bbraf() { bb --runall=do_fetch "$@"; ___bb_bel; }
+
+## bitbake-layers
+bbl() {
+  local args
+  # alias
+  case $1 in
+    # layer operation.
+    al) args=("add-layer") ;;
+    rl) args=("remove-layer") ;;
+    cl) args=("create-layer") ;;
+    # layers inspection.
+    sl)  args=("show-layers") ;;
+    sr)  args=("show-recipes") ;;
+    sa)  args=("show-appends") ;;
+    so)  args=("show-overlayed") ;;
+    scd) args=("show-cross-depends") ;;
+    # not match any.
+    *) args=();;
+  esac
+  if [ -n "${args[*]}" ]; then shift; fi
+  args+=("${@}")
+  # printf 'bbl args: %s\n' "${args[@]}"
+  ___bb_cmd bitbake-layers "${args[@]}"
+  ___bb_bel
+}
+# shellcheck disable=SC2120 # args are optional.
+## bitbake-layers show-layers
+bbll() { bbl sl "$@"; ___bb_bel; }
+# shellcheck disable=SC2120 # args are optional.
+## bitabke-layers show-recipes
+bblr() { bbl sr "$@"; ___bb_bel; }
+# shellcheck disable=SC2120 # args are optional.
+## bitabke-layers show-appends
+bbla() { bbl sa "$@"; ___bb_bel; }
+# shellcheck disable=SC2120 # args are optional.
+## bitabke-layers show-overlayed
+bblo() { bbl so "$@"; ___bb_bel; }
+# shellcheck disable=SC2120 # args are optional.
+## bitabke-layers show-cross-depends
+bblc() { bbl scd "$@"; ___bb_bel; }
+
+# ================================================================
+# combination
+# ================================================================
+___bb_set_wd() {
+  if [ -z "${WD-}" ]; then
+    # when PWD is BUILDDIRE create subdir because it gets messy.
+    if [ "${PWD}" = "${BUILDDIR}" ]; then
+      WD="${1}"
+    else
+      WD="."
+    fi
+  fi
+  mkdir -p "${WD}"
+}
+
+___bb_for_each() {
+  ({
+    set -ueo pipefail
+    local rcps rcp eachcmd ret=0
+    eachcmd=$1; shift
+    mapfile -t rcps < <(___bb_put_rcp_from_arg "$@")
+    if [ "${#rcps[@]}" -gt 1 ]; then
+      local cnt=0
+      time for rcp in "${rcps[@]}"; do
+        cnt=$((cnt+1))
+        "${eachcmd}" "${rcp}" "${cnt}" "${#rcps[@]}" || ret="$?"
+      done
+      ___bb_inf "END[$ret]:: bbg $*"
+    else
+      rcp="${rcps[0]-}"
+      "${eachcmd}" "${rcp}" || ret="$?"
+    fi
+    exit "${ret}"
+  })
+}
+
+BBENVCACHE="envs"
+___bbe_one() {
+  local outf ret=0
+  if [ -n "$1" ]; then
+    outf="${1}.env"
+  else
+    outf="env"
+  fi
+  if [ $# -ge 3 ]; then
+    ___bb_inf "$(printf '%4d/%4d :: bitbake -e %s > %s' "$2" "$3" "$1" "${WD}/${outf}")"
+  else
+    ___bb_inf "bitbake -e $1 > ${WD}/${outf}"
+  fi
+  # shellcheck disable=SC2086 # intent to give no argument if empty.
+  if bb -e ${1} > "${WD}/.${outf}"; then
+    mv "${WD}/.${outf}" "${WD}/${outf}"
+  else
+    ret="$?"
+  fi
+  return "${ret}"
+}
+## bitbake -e
+bbe() {
+  ___bb_set_wd "${BBENVCACHE}"
+  ___bb_for_each ___bbe_one "$@"
+  ___bb_bel
+}
+
+BBGRAPH="bbgs"
+___bbg_one() {
+  local outd="${1}" ret=0
+  mkdir -p "${WD}/.${outd}"
+  if [ $# -ge 3 ]; then
+    ___bb_inf "$(printf '%4d/%4d :: (%s) bitbake -g %s' "$2" "$3" "${WD}/$1" "${outd}")"
+  else
+    ___bb_inf "(${WD}/$1) bitbake -g $1"
+  fi
+  # shellcheck disable=SC2086 # intent to give no argument if empty.
+  if (cd "${WD}/.${outd}" && bb -g ${1}); then
+    rm -rf "${WD:?}/${outd}"
+    mv "${WD}/.${outd}" "${WD}/${outd}"
+  else
+    ret="$?"
+  fi
+  return "${ret}"
+}
+## bitbake -g
+bbg() {
+  ___bb_set_wd "${BBGRAPH}"
+  ___bb_for_each ___bbg_one "$@"
+  ___bb_bel
+}
+
+BBSTAT="stats"
+# collect tree status
+bbstat() {
+  time ({
+    set -ueo pipefail
+    local ret=0
+    ___bb_set_wd "${BBSTAT}"
+    mkdir -p "${WD}"
+
+    cd "${WD}"
+    # bbll > .layers.log
+    # ___bbll_tsv .layers.log > layers.tsv
+    ___bb_time_mute=1
+    ___bb_tsv layers	    ___bbll_tsv	 bbll
+    ___bb_tsv recipes	    ___bblr_tsv	 bblr
+    ___bb_tsv recipes-f	    ___bblrf_tsv bblr -f
+    ___bb_tsv appends	    ___bbla_tsv	 bbla
+    ___bb_tsv overlayed	    ___bblr_tsv	 bblo
+    ___bb_tsv cross-depends ___bblc_tsv	 bblc
+    ___bb_tsv versions	    ___bbs_tsv	 bb -s
+  })
+  ___bb_bel
+}
+___bb_tsv() {
+  # 1  : name
+  # 2  : formatter command
+  # 3  : generate command
+  # 4..: generate command argumetns
+  local name formatter
+  name="$1"
+  formatter="$2"
+  shift 2
+  "$@" > ".${name}.log"
+  "${formatter}" ".${name}.log" > "${name}.tsv"
+  ret="$?"
+  ___bb_inf "created ${name}.tsv"
+  return "${ret}"
+}
+___bbll_tsv() {
+  local awkscript
+  read -rd '' awkscript << '__eof__' ||:
+BEGIN {
+	active = 0
+}
+
+{
+	if (active) {
+		printf "%s\t%s\t%s\n", $1, $2, $3
+	} else if ($0 ~ /^===*=$/) {
+		active = 1
+	}
+}
+__eof__
+  gawk "$awkscript" "$1"
+}
+___bblr_tsv() {
+  local awkscript
+  read -rd '' awkscript << '__eof__' ||:
+BEGIN {
+	active = 0
+	recipe = "(null)"
+}
+
+{
+	if (active) {
+		if ($1 ~ /:$/) {
+			recipe = gensub(/:$/, "", 1, $1)
+		} else {
+			skip = $3
+			for (ii = 4; ii <= NF; ii++) {
+				skip = skip " " $ii
+			}
+			printf "%s\t%s\t%s\t%s\n", recipe, $1, $2, skip
+		}
+	} else if ($1 ~ "===") {
+		active = 1
+	}
+}
+__eof__
+  gawk "$awkscript" "$1"
+}
+___bblrf_tsv() {
+  local awkscript
+  read -rd '' awkscript << '__eof__' ||:
+BEGIN {
+	active = 0
+}
+
+{
+	if (active) {
+		major = "primary"
+		if ($0 ~ /^ /) {
+			major = "secondary"
+		}
+		skipped = ""
+		file = $1
+		for (ii = 2; ii <= NF; ii++) {
+			if ("" == skipped) {
+				if ($ii == "(skipped:") {
+					skipped = $ii
+				} else {
+					file = file " " $ii
+				}
+			} else {
+				skipped = skipped " " $ii
+			}
+		}
+		printf "%s\t%s\t%s\n", major, file, skipped
+	} else if ($1 ~ "===") {
+		active = 1
+	}
+}
+__eof__
+  gawk "$awkscript" "$1"
+}
+___bbla_tsv() {
+  local awkscript
+  read -rd '' awkscript << '__eof__' ||:
+BEGIN {
+	active = 0
+	recipe = "(null)"
+	skipped = ""
+}
+
+{
+	if (active) {
+		if ($0 ~ /:$/) {
+			recipe = $1
+			skipped = $2
+			if ("" != skipped) {
+				skipped = "(skipped)"
+			}
+		} else {
+			sub(/:$/, "", recipe)
+			file = $1
+			for (ii = 2; ii <= NF; ii++) {
+				file = file " " $ii
+			}
+			printf "%s\t%s\t%s\n", recipe, skipped, file
+		}
+	} else if ($1 ~ "===") {
+		active = 1
+	}
+}
+__eof__
+  gawk "$awkscript" "$1"
+}
+___bblc_tsv() {
+  local awkscript
+  read -rd '' awkscript << '__eof__' ||:
+BEGIN {
+	active = 0
+}
+
+{
+	if (active) {
+		if (NF == 3) {
+			printf "%s\t%s\t%s\n", $1, $2, $3
+		}
+	} else if ($1 == "Loaded") {
+		active = 1
+	}
+}
+__eof__
+  gawk "$awkscript" "$1"
+}
+___bbs_tsv() {
+  local awkscript
+  read -rd '' awkscript << '__eof__' ||:
+BEGIN {
+	active = 0
+}
+
+{
+	if (active) {
+		latest = $2
+		sub(/^:/, "", latest)
+		preffer = $3
+		sub(/^:/, "", preffer)
+		require = $4
+		sub(/^:/, "", require)
+		printf "%s\t%s\t%s\t%s\n", $1, latest, preffer, require
+	} else if ($1 == "") {
+		active = 1
+	}
+}
+__eof__
+  gawk "$awkscript" "$1"
+}
+
+# ================================================================
+# oe-pkgdata-util
+# ================================================================
+opu() {
+  local args=() subcmd
+  # pre-subcommand opstions
+  while [ $# -gt 0 ]; do
+    case $1 in
+      -h|--help|-d|--debug)
+        args+=("$1")
+        shift
+        ;;
+      -p|--pkgdata-dri)
+        args+=("$1");
+        shift
+        if [ $# -gt 1 ]; then args+=("$1"); shift; fi
+        ;;
+      *) break;
+    esac
+  done
+  # lookup-pkg
+  # list-pkgs
+  # list-pkg-files
+  # lookup-recipe
+  # find-path
+  case $1 in
+    lup)  subcmd="lookup-pkg";;
+    lsp)  subcmd="list-pkgs";;
+    lspf) subcmd="list-pkg-files";;
+    lur)  subcmd="lookup-recipe";;
+    fp)   subcmd="find-path";;
+    *)    subcmd="$1";;
+  esac
+  shift
+  args+=("${subcmd}" "${@}")
+  ___bb_time_mute=1 ___bb_cmd oe-pkgdata-util "${args[@]}"
+}
+_opu() {
+  COMPREPLY=()
+  local cur prev # cword
+  cur="${COMP_WORDS[${COMP_CWORD}]}"
+  prev="${COMP_WORDS[${COMP_CWORD}-1]}"
+  # cword="${COMP_CWORD}"
+  local subcmd="" subargs=() ii=1 comp=()
+  local main_opt_h=0 main_opt_d=0 main_opt_p=0
+  for ((ii=1; ii<${#COMP_WORDS[*]}; ii++)); do
+    arg="${COMP_WORDS[$ii]}"
+    case "${arg}" in
+      # subcommands
+      lup|lookup-pkg)      subcmd="${arg}";;
+      lsp|list-pkgs)       subcmd="${arg}";;
+      lspf|list-pkg-files) subcmd="${arg}";;
+      lur|lookup-recipe)   subcmd="${arg}";;
+      package-info)        subcmd="${arg}";;
+      fp|find-path)        subcmd="${arg}";;
+      read-value)          subcmd="${arg}";;
+      glob)                subcmd="${arg}";;
+      -h|--help)        if [ -z "${subcmd}" ]; then main_opt_h=1; fi;;
+      -d|--debug)       if [ -z "${subcmd}" ]; then main_opt_d=1; fi;;
+      -p|--pkgdata-dir) if [ -z "${subcmd}" ]; then main_opt_p=1; fi;;
+      *)
+        if [ -n "${subcmd}" ]; then subargs=("${subargs[@]}" "${arg}"); fi;;
+    esac
+  done
+  if [ -z "${subcmd}" ] || [ "${subcmd}" = "${cur}" ] ; then
+    comp=(lup lookup-pkg lsp list-pkgs lspf list-pkg-files lur lookup-recipe package-info fp find-path read-value glob)
+    if [ 0 -eq "${main_opt_h}" ] || [[ "${cur}" =~ ^(-h|--help)$ ]]; then comp+=(-h --help); fi
+    if [ 0 -eq "${main_opt_d}" ] || [[ "${cur}" =~ ^(-d|--debug)$ ]]; then comp+=(-d --debug); fi
+    if [ 0 -eq "${main_opt_p}" ] || [[ "${cur}" =~ ^(-p|--pkgdata-dir)$ ]]; then comp+=(-p --pkgdata-dir); fi
+    case "${prev}" in
+      -p|--pkgdata-dir) comp=("$(compgen -o plusdirs -- "${cur}")") ;;
+      *) ;;
+    esac
+    COMPREPLY=($(compgen -W "${comp[*]}" -- "${cur}"))
+    return 0
+  else
+    if [[ -n "${cur}" ]]; then
+      if [[ ! " ${subargs[*]} " =~ " "(-h|--help)" " ]] || [[ "${cur}" =~ ^(-h|--help)$ ]]; then comp+=(-h --help); fi
+    fi
+    case "${subcmd}" in
+      lup|lookup-pkg)
+        if [[ -n "${cur}" ]]; then
+          if [[ ! " ${subargs[*]} " =~ " "(-r|--reverse)" " ]] || [[ "${cur}" =~ ^(-r|--reverse)$ ]]; then comp+=(-r --reverse); fi
+        fi ;;
+      lsp|list-pkgs)
+        if [[ -n "${cur}" ]]; then
+          if [[ ! " ${subargs[*]} " =~ " "(-r|--runtime)" " ]] || [[ "${cur}" =~ ^(-r|--runtime)$ ]]; then comp+=(-r --runtime); fi
+          if [[ ! " ${subargs[*]} " =~ " "(-p|--recipe)" " ]] || [[ "${cur}" =~ ^(-p|--recipe)$ ]]; then comp+=(-p --recipe); fi
+          if [[ ! " ${subargs[*]} " =~ " "(-u|--unpackaged)" " ]] || [[ "${cur}" =~ ^(-u|--unpackaged)$ ]]; then comp+=(-u --unpackaged); fi
+        fi ;;
+      lspf|list-pkg-files)
+        if [[ -n "${cur}" ]]; then
+          if [[ ! " ${subargs[*]} " =~ " "(-r|--runtime)" " ]] || [[ "${cur}" =~ ^(-r|--runtime)$ ]]; then comp+=(-r --runtime); fi
+          if [[ ! " ${subargs[*]} " =~ " "(-p|--recipe)" " ]] || [[ "${cur}" =~ ^(-p|--recipe)$ ]]; then comp+=(-p --recipe); fi
+          if [[ ! " ${subargs[*]} " =~ " "(-u|--unpackaged)" " ]] || [[ "${cur}" =~ ^(-u|--unpackaged)$ ]]; then comp+=(-u --unpackaged); fi
+          if [[ ! " ${subargs[*]} " =~ " "(-l|--long)" " ]] || [[ "${cur}" =~ ^(-l|--long)$ ]]; then comp+=(-l --long); fi
+        fi ;;
+      lur|lookup-recipe)
+        if [[ -n "${cur}" ]]; then
+          if [[ ! " ${subargs[*]} " =~ " "(-c|--continue)" " ]] || [[ "${cur}" =~ ^(-c|--continue)$ ]]; then comp+=(-c --continue); fi
+        fi ;;
+      package-info)
+        if [[ "${prev}" =~ ^(-f|--file)$ ]]; then
+          comp=($(compgen -f -- "${cur}"));
+        elif [[ -n "${cur}" ]]; then
+          if [[ ! " ${subargs[*]} " =~ " "(-f|--file)" " ]] || [[ "${cur}" =~ ^(-f|--file)$ ]]; then comp+=(-f --file); fi
+          if [[ ! " ${subargs[*]} " =~ " "(-e|--extra)" " ]] || [[ "${cur}" =~ ^(-e|--extra)$ ]]; then comp+=(-e --extra); fi
+        fi ;;
+      fp|find-path) ;;
+      read-value)
+        if [[ "${prev}" =~ ^(-f|--file)$ ]]; then
+          comp=($(compgen -f -- "${cur}"));
+        elif [[ -n "${cur}" ]]; then
+          if [[ ! " ${subargs[*]} " =~ " "(-f|--file)" " ]] || [[ "${cur}" =~ ^(-f|--file)$ ]]; then comp+=(-f --file); fi
+          if [[ ! " ${subargs[*]} " =~ " "(-n|--prefix-name)" " ]] || [[ "${cur}" =~ ^(-n|--prefix-name)$ ]]; then comp+=(-n --prefix-name); fi
+          if [[ ! " ${subargs[*]} " =~ " "(-u|--unescape)" " ]] || [[ "${cur}" =~ ^(-u|--unescape)$ ]]; then comp+=(-u --unescape); fi
+        fi ;;
+      glob)
+        if [[ -n "${cur}" ]]; then
+          if [[ ! " ${subargs[*]} " =~ " "(-x|--exclude)" " ]] || [[ "${cur}" =~ ^(-x|--exclude)$ ]]; then comp+=(-x --exclude); fi
+        fi ;;
+      *)
+    esac
+    COMPREPLY=($(compgen -W "${comp[*]}" -- "${cur}"))
+  fi
+}
+complete -F _opu opu
