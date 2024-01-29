@@ -260,42 +260,69 @@ bbg() {
 }
 
 BBSTAT="stats"
-# collect tree status
+## bbstat # collect tree status
 bbstat() {
-  time ({
-    set -ueo pipefail
-    local ret=0
-    ___bb_set_wd "${BBSTAT}"
-    mkdir -p "${___BB_TMP_WD}"
-
-    cd "${___BB_TMP_WD}"
-    # bbll > .layers.log
-    # ___bbll_tsv .layers.log > layers.tsv
-    ___bb_time_mute=1
-    ___bb_tsv layers	    ___bbll_tsv	 bbll
-    ___bb_tsv recipes	    ___bblr_tsv	 bblr
-    ___bb_tsv recipes-f	    ___bblrf_tsv bblr -f
-    ___bb_tsv appends	    ___bbla_tsv	 bbla
-    ___bb_tsv overlayed	    ___bblr_tsv	 bblo
-    ___bb_tsv cross-depends ___bblc_tsv	 bblc
-    ___bb_tsv versions	    ___bbs_tsv	 bb -s
-  })
-  ___bb_bel
+  ___bb_cmd_inner ___bbstat
 }
+___bbstat() {
+  local ret=0
+  bbsl || ret=$?
+  bbsr || ret=$?
+  bbsv || ret=$?
+  bbsc || ret=$?
+  return "$ret"
+}
+## bbsl # bitbake-layers show-layers > tsv
+bbsl() {
+  ___bb_tsv layers ___bbll_tsv bbll
+}
+## bbsr # bitbake-layers show-recipes -f and bitbake-layers show-appends > tsv
+bbsr() {
+  ___bb_cmd_inner ___bbsr
+}
+___bbsr() {
+  local ret=0
+  ___bb_tsv bbfiles   ___bblrf_tsv bblr -f || ret="$?"
+  ___bb_tsv bbappends ___bbla_tsv  bbla    || ret="$?"
+  return "$ret"
+}
+## bbsc # bitbake-layers show-cross-depends > tsv
+bbsc() {
+  ___bb_tsv crossdeps ___bblc_tsv bblc
+}
+## bbsv # bitbake-layers show-recipes and show-overlayed and bitbake -s > tsv
+bbsv() {
+  ___bb_cmd_inner ___bbsv
+}
+___bbsv() {
+  local ret=0
+  ___bb_tsv recipes   ___bblr_tsv bblr  || ret="$?"
+  ___bb_tsv versions  ___bbs_tsv  bb -s || ret="$?"
+  ___bb_tsv overlayed ___bblr_tsv bblo  || ret="$?"
+  return "$ret"
+}
+
 ___bb_tsv() {
   # 1  : name
   # 2  : formatter command
   # 3  : generate command
   # 4..: generate command argumetns
-  local name formatter
-  name="$1"
-  formatter="$2"
-  shift 2
-  "$@" > ".${name}.log"
-  "${formatter}" ".${name}.log" > "${name}.tsv"
-  ret="$?"
-  ___bb_inf "created ${name}.tsv"
-  return "${ret}"
+  ({
+    set -ueo pipefail
+    # working direcotry creation
+    ___bb_set_wd "${BBSTAT}"
+    cd "${___BB_TMP_WD}"
+    # processing
+    local name formatter
+    name="$1"
+    formatter="$2"
+    shift 2
+    "$@" > ".${name}.log"
+    "${formatter}" ".${name}.log" > "${name}.tsv"
+    ret="$?"
+    ___bb_inf "created ${___BB_TMP_WD}/${name}.tsv"
+    exit "${ret}"
+  })
 }
 ___bbll_tsv() {
   local awkscript
