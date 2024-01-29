@@ -216,6 +216,7 @@ ___bbe_one() {
     mv "${___BB_TMP_WD}/.${outf}" "${___BB_TMP_WD}/${outf}"
   else
     ret="$?"
+    rm "${___BB_TMP_WD}/.${outf}"
   fi
   return "${ret}"
 }
@@ -245,6 +246,7 @@ ___bbg_one() {
     mv "${___BB_TMP_WD}/.${outd}" "${___BB_TMP_WD}/${outd}"
   else
     ret="$?"
+    rm -rf "${___BB_TMP_WD:?}/.${outd}"
   fi
   return "${ret}"
 }
