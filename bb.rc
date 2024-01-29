@@ -30,27 +30,6 @@ ___is_sourced() {
 # try return command and then exit command for avoid console down.
 ___is_sourced || return 1 &>/dev/null || exit 1
 
-# shellcheck disable=SC2120 # argumente 1 is optional.
-___is_topfunc() {
-  #
-  # Returns 0 if the call stack is the same or shallow compared to the specified
-  # value.
-  # $1: default is 1
-  #
-  local sc
-  if [ -n "${BASH_VERSION}" ]; then
-    sc="${#FUNCNAME[@]}"
-  elif [ -n "${ZSH_VERSION}" ]; then
-    # shellcheck disable=SC2154 # in use zsh code.
-    sc="${#funcstack[@]}"
-  else
-    echo '___is_topfunc: Not supported shell' >&2;
-    return 1
-  fi
-  if [ $((sc - 1)) -le "${1-1}" ]; then return 0; fi
-  return 1
-}
-
 ___bb_inf() {
   printf '@@@@ %s\n' "$*" >&2
 }
@@ -76,33 +55,31 @@ ___bb_cmd() {
   #
   local ret=0
   ___bb_inf "START:: $*"
-  # printf 'arg: %s\n' "$@"
-  if [ -n "${___bb_time_mute:-}" ]; then
-    # Use printf to avoid spliting argument which contains whitespace.
-    # shellcheck disable=SC2046 # intented spliting with whitespace.
-    eval $(printf '"%s" ' "$@")
-  else
-    # shellcheck disable=SC2046 # intented spliting with whitespace.
-    time eval $(printf '"%s" ' "$@")
-  fi
+  ___bb_cmd_inner "$@"
   ret="$?"
   ___bb_inf "END[$ret]:: $*"
   return $ret
 }
-
-___bb_bel() {
-  #
-  # put bell
-  #
-  # Save the return value
-  local ret=$?
-  if ___is_topfunc 2; then
-    case "${mute-}" in
-      true|TRUE|1) ;;
-      *) tput bel >&2 ;;
-    esac
+___bb_cmd_inner() {
+  # defind ___bb_mute when not declared.
+  if [ -z "${___bb_mute+declared}" ]; then
+    local ___bb_mute
   fi
-  return "$ret"
+  local ret
+  # printf 'arg: %s\n' "$@"
+  if [ -n "${___bb_mute-}" ]; then
+    # Use printf to avoid spliting argument which contains whitespace.
+    # shellcheck disable=SC2046 # intented spliting with whitespace.
+    eval $(printf '"%s" ' "$@")
+    ret=$?
+  else
+    ___bb_mute=1
+    # shellcheck disable=SC2046 # intented spliting with whitespace.
+    time eval $(printf '"%s" ' "$@")
+    ret=$?
+    tput bel >&2
+  fi
+  return $ret
 }
 
 # ================================================================
@@ -110,7 +87,7 @@ ___bb_bel() {
 # ================================================================
 
 ## bitbake with time
-bb() { ___bb_cmd bitbake "$@"; ___bb_bel; }
+bb() { ___bb_cmd bitbake "$@"; }
 ___bb_task() {
   local rcps task
   task=$1; shift
@@ -118,25 +95,24 @@ ___bb_task() {
   bb -c "${task}" "${rcps[@]}"
 }
 ## bitbake clean
-bbc()  { ___bb_task do_clean "$@"; ___bb_bel; }
+bbc()  { ___bb_task do_clean "$@"; }
 ## bitbake clean-sstate
-bbcc() { ___bb_task do_cleansstate "$@"; ___bb_bel; }
+bbcc() { ___bb_task do_cleansstate "$@"; }
 ## bitbake clean-all
-bbccc() { ___bb_task do_cleanall "$@"; ___bb_bel; }
+bbccc() { ___bb_task do_cleanall "$@"; }
 ## bitbake clean and bitbake
-bbr() { bbc "$@" && bb "$@"; ___bb_bel; }
+bbr() { bbc "$@" && bb "$@"; }
 ## bitbake cleansstate and bitbake
-bbrr() { bbcc "$@" && bb "$@"; ___bb_bel; }
+bbrr() { bbcc "$@" && bb "$@"; }
 ## bitbake cleanall and bitbake
-bbrrr() { bbccc "$@" && bb "$@"; ___bb_bel; }
+bbrrr() { bbccc "$@" && bb "$@"; }
 ## bitbake --ranall=$1 $2
 bbra()  {
   local cmd="$1"; shift;
   bb --runall="${cmd}" "$@";
-  ___bb_bel
 }
 ## bitabke --runall=do_fetch "$@"
-bbraf() { bb --runall=do_fetch "$@"; ___bb_bel; }
+bbraf() { bb --runall=do_fetch "$@"; }
 
 ## bitbake-layers
 bbl() {
@@ -160,28 +136,30 @@ bbl() {
   args+=("${@}")
   # printf 'bbl args: %s\n' "${args[@]}"
   ___bb_cmd bitbake-layers "${args[@]}"
-  ___bb_bel
 }
 # shellcheck disable=SC2120 # args are optional.
 ## bitbake-layers show-layers
-bbll() { bbl sl "$@"; ___bb_bel; }
+bbll() { bbl sl "$@"; }
 # shellcheck disable=SC2120 # args are optional.
 ## bitabke-layers show-recipes
-bblr() { bbl sr "$@"; ___bb_bel; }
+bblr() { bbl sr "$@"; }
 # shellcheck disable=SC2120 # args are optional.
 ## bitabke-layers show-appends
-bbla() { bbl sa "$@"; ___bb_bel; }
+bbla() { bbl sa "$@"; }
 # shellcheck disable=SC2120 # args are optional.
 ## bitabke-layers show-overlayed
-bblo() { bbl so "$@"; ___bb_bel; }
+bblo() { bbl so "$@"; }
 # shellcheck disable=SC2120 # args are optional.
 ## bitabke-layers show-cross-depends
-bblc() { bbl scd "$@"; ___bb_bel; }
+bblc() { bbl scd "$@"; }
 
 # ================================================================
 # combination
 # ================================================================
 ___bb_set_wd() {
+  #
+  # Set working directory to ___BB_TMP_WD
+  #
   if [ -z "${___BB_TMP_WD-}" ]; then
     # when PWD is BUILDDIRE create subdir because it gets messy.
     if [ "${PWD}" = "${BUILDDIR}" ]; then
@@ -194,27 +172,32 @@ ___bb_set_wd() {
 }
 
 ___bb_for_each() {
-  ({
-    set -ueo pipefail
-    local rcps rcp eachcmd ret=0
-    eachcmd=$1; shift
-    mapfile -t rcps < <(___bb_put_rcp_from_arg "$@")
-    if [ "${#rcps[@]}" -gt 1 ]; then
-      local cnt=0
-      ___bb_time_mute=1 # mute for each time command.
-      time for rcp in "${rcps[@]}"; do
-        cnt=$((cnt+1))
-        "${eachcmd}" "${rcp}" "${cnt}" "${#rcps[@]}" || ret="$?"
-      done
-      ___bb_inf "END[$ret]:: bbg $*"
-    else
-      rcp="${rcps[0]-}"
-      "${eachcmd}" "${rcp}" || ret="$?"
-    fi
-    exit "${ret}"
-  })
+  local rcps rcp eachcmd
+  eachcmd="$1"; shift
+  mapfile -t rcps < <(___bb_put_rcp_from_arg "$@")
+  if [ "${#rcps[@]}" -gt 1 ]; then
+    ___bb_cmd_inner ___bb_for_each_inner "${eachcmd}" "${rcps[@]}"
+  else
+    rcp="${rcps[0]-}"
+    "${eachcmd}" "${rcp}"
+  fi
 }
-
+___bb_for_each_inner() {
+  local cnt=0 ret=0 fails=()
+  eachcmd="$1"; shift
+  for rcp in "$@"; do
+    cnt=$((cnt+1))
+    if "${eachcmd}" "${rcp}" "${cnt}" "${#rcps[@]}"; then :; else
+      ret="$?"
+      fails+=("${rcp}")
+    fi
+  done
+  if [ -n "${fails[*]}" ]; then
+    ___bb_inf "ERROR: FAILD[$ret]: ${fails[*]}"
+  fi
+  return "$ret"
+}
+# ================
 BBENVCACHE="envs"
 ___bbe_one() {
   local outf ret=0
@@ -239,9 +222,11 @@ ___bbe_one() {
 ## bitbake -e
 bbe() {
   ({
+    local ret
     ___bb_set_wd "${BBENVCACHE}"
-    ___bb_for_each ___bbe_one "$@"
-    ___bb_bel
+    ___bb_for_each ___bbe_one "$@"; ret="$?"
+    ___bb_inf "END[$ret]:: bbe $*"
+    exit "$ret"
   })
 }
 
@@ -266,9 +251,11 @@ ___bbg_one() {
 ## bitbake -g
 bbg() {
   ({
+    local ret
     ___bb_set_wd "${BBGRAPH}"
-    ___bb_for_each ___bbg_one "$@"
-    ___bb_bel
+    ___bb_for_each ___bbg_one "$@"; ret=$?
+    ___bb_inf "END[$ret]:: bbg $*"
+    exit "$ret"
   })
 }
 
