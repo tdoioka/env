@@ -198,7 +198,7 @@ ___bb_for_each_inner() {
   return "$ret"
 }
 # ================
-BBENVCACHE="envs"
+BBENVCACHE="bbe"
 ___bbe_one() {
   local outf ret=0
   if [ -n "$1" ]; then
@@ -231,7 +231,7 @@ bbe() {
   })
 }
 
-BBGRAPH="bbgs"
+BBGRAPH="bbg"
 ___bbg_one() {
   local outd="${1}" ret=0
   mkdir -p "${___BB_TMP_WD}/.${outd}"
@@ -261,7 +261,7 @@ bbg() {
   })
 }
 
-BBSTAT="stats"
+BBSTAT="bbs"
 ## bbstat # collect tree status
 bbstat() {
   ___bb_cmd_inner ___bbstat
